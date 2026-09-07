@@ -28,5 +28,4 @@ contributes:
       code-copy: false
       margin: 0.10
       html-math-method: mathjax
-
-    date-format: long
+      date-format: long

@@ -1,16 +1,23 @@
 ---
 title: "Reminders"
-author: "Diego DI CARLO (on behalf of Roland Badeau)"
+subtitle: "4AI01 - Signal Representation"
+author: 
+  - name: "Diego DI CARLO"
+    affiliation: ADASP / S2A, IDS, LTCI
+date: last-modified
 format: 
     dtslides-revealjs:
       slide-number: c/t
+      footer: "2026-2026 / 4AI01 - Signal Representation / Reminders"
+      css: style.css
+lightbox: auto
 ---
 
-# Course introduction
+# Course introduction {.section-slide}
 
 {{< include _macros.qmd >}}
 
-## Representation of signal (4AI01)
+## Representation of signal (4AI01) {.tiny-slide}
 
 . . .
 
@@ -24,7 +31,7 @@ This course introduces various digital signal processing tool:
 -  Wavelets
 
 ::: {.notes}
-Speaker notes go here.
+Read the contents now
 :::
 
 . . .
@@ -35,11 +42,14 @@ These notions are related to various courses in the SPAI study track:
 - they find many application, incuding denoising
 - time-frequency representation are essential tools in speech processing, audio, and multimedial signal processing
 
+::: {.notes}
+This concepts will be later fondamental
+:::
 
-## Program of the course unit
+## Program of the course unit {.tiny-slide}
 
-1. [Lesson *Reminders*]{.fragment fragment-index=0} [$\leftarrow$ today]{.fragment fragment-index=10}
-2. [Lesson *Filter synthesis*]{.fragment fragment-index=1} [$\leftarrow$ today]{.fragment fragment-index=10}
+1. [Lesson *Reminders*]{.fragment fragment-index=0} [$\leftarrow$ today - 1st hour]{.fragment fragment-index=10}
+2. [Lesson *Filter synthesis*]{.fragment fragment-index=1} [$\leftarrow$ today - 2nd hour]{.fragment fragment-index=10}
 3. [Lesson *Frequency conversion*]{.fragment fragment-index=2}
 4. [Lesson *Short time Fourier transform*]{.fragment fragment-index=3}
 5. [Practical work *Frequency conversion, STFT*]{.fragment fragment-index=4}
@@ -49,57 +59,58 @@ These notions are related to various courses in the SPAI study track:
 9. [Practical work *Wevelets*]{.fragment fragment-index=8}
 10. [Written examination]{.fragment fragment-index=9}
 
-## Educational resources
+## Educational resources {.small-slide}
 
-. . .
+::: {.fragment}
+### Website (English/French)
 
-### Website 
-
-`https://moodle.ip-paris.fr/` (English/French)
+::: {.center}
+`https://moodle.ip-paris.fr/`
+:::
 
 - Links to the course **handout** + **slides**
 - Subjects of tutorials and practial works + data
 - Solution availabile online after every tutorial
 - Online submission of the practial works reports
+:::
 
-. . . 
-
+::: {.fragment}
 ### New grading for this year
 
 - Practial works will not be graded, but negative points if not submitted or if not writteng careffully
 - Presence at lab sessions is mandatory at `TelecomParis: negative points if an absence is not duly justified
 - Written examination will include detailed questions on the practical works
+:::
 
-# Part I: Discrete Filtering
+# Part I: Discrete Filtering {.section-slide}
 
-## Signal and filters
+First definitions
 
-A **signal** is a esquence of real (or complex) number  $x(n)$ for all $n \in \ZZ$
+## Signal and filters {.small-slide}
 
-A **filter** is a tranform which turns a signal into another, which is assumed here to be linear and time invariance
+A **signal** is a sequence of real (or complex) number  $x(n)$ for all $n \in \ZZ$
+
+. . .
+
+A (linear and time invariance) **filter** is a tranform which turns a signal into another
 
 - $x(n)$ and $y(n)$ are the *input* and *output* respectively
 - for any $m \in \ZZ$, the filter trasform $x(n-m)$ into $y(n-m)$
 
+. . .
+
 ::: {.columns}
-::: {.column width="60%"}
+::: {.column width="65%"}
+All filters are characterize by **Impulse Response** $h(n)$, the trasform of the impulse signal $h(n) = \delta_0(n)$
 
-All filters are characterize by their **Impulse Response** $h(n)$,
-
-- the trasform of the impulse signal $h(n) = \delta_0(n)$
-
-::: {.callout}
-### Convolution product
-
-The general relationship between input and output signal is a *convolution product*
+**Convolution product** describes the relationship between input and output signals
 $$
     y(n) = \sum_{m\in\ZZ} h(m) x(n - m)
 $$
 :::
-:::
 
-
-::: {.column layout="[[-1], [1], [-1]]"  width="40%"}
+::: {.column  width="35%"}
+<!-- ::: {.column layout="[[-1], [1], [-1]]"  width="35%"} -->
 
 ![](https://quincyaflint.weebly.com/uploads/2/6/5/0/26500868/convolution-1-fast_orig.gif){fig-align="center"}
 
@@ -107,22 +118,24 @@ $$
 
 :::
 
-
-
-## Causality and stability
+## Causality and stability {.tiny-slide}
 
 ::: {.notes}
 Beyond linearity and invariance to translation over time, we usually expect a filter to satisfy the following two conditions
 :::
 
+
+::: {.fragment}
 ### Causality
 
 - Definition: $y(n)$ only depends on $x(k)$ , $k \leq n$
 - Necessary and sufficient condition: $h(m)=0$ if $m<0$ (proof in the notes)
-- Property:  
-    causal input $\implies$ causal output
+- Property: causal input $\implies$ causal output
 - Remark: compulsory for real-time processing
+:::
 
+
+::: {.fragment}
 ### Stability
 
 - Definition: bounded input $\implies$ bounded output
@@ -131,35 +144,45 @@ Beyond linearity and invariance to translation over time, we usually expect a fi
 - Remark: this is numerically compulsory
   - If $x_q = x + e$, then $y_q = y + h\ast e$
   - If $h\in l^1(\ZZ)$, $\| h \ast e \|_{\infty} < \|h\|_1 \|e\|_\infty$, otherwise $h\ast e$ may diverge
+:::
 
-## Ideal filters
+## Ideal filters {.small-slide}
 
+
+::: {.fragment}
 ### Low pass filter (periodic spectrum)
 
 - Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } |\nu| < \nu_c \\ 0 &\mbox{if } |\nu| > \nu_c \end{cases}$
 - Impulse response: $h(n) = 2 \nu_c \sinc(2\pi \nu_c n)$
+:::
 
-. . .
-
+::: {.fragment}
 ### Exercise: band-pass filter
 
 - Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } ||\nu|-|\nu_0|| < \nu_c \\ 0 &\mbox{if } ||\nu|-|\nu_0|| > \nu_c \end{cases}$
 - Impulse response: $h(n)=4 \nu_c \sinc(2 \pi \nu_c n) \cos(2 \pi \nu_0 n)$
+:::
 
-### Causality? Stability?
+<br>
 
-## Transient and steady states
+::: {.fragment}
+::: {.center}
+[Causality? Stability?]{.alert}
+:::
+:::
+
+## Transient and steady states {.small-slide}
 
 ### Example:
-- $x(n)$ is a unit step signal: $x(n) = 1_{[0,+\infty[}(n)$
-- $h(n)$ is an averaging filter: $h(n) = \frac1N 1_{[0,N-1[}(n)$
+- $x(n)$ is a unit step signal: $x(n) = \vbone_{[0,+\infty[}(n)$
+- $h(n)$ is an averaging filter: $h(n) = \frac1N \vbone_{[0,N-1[}(n)$
 
 We observe:
 
 - From $n=0$ to $N-2$: transient state $\to$ ramp
 - From $n=N-1$ to $+\infty$: steady state $\to$ constant signal
 
-## Phase and group delays
+## Phase and group delays {.small-slide}
 
 Frequency response: $H(\eipiv)=H_R(\nu) e^{i \phi(\nu)}$
 
@@ -185,9 +208,9 @@ $$
 
 Linear phase filters (= the delay is constant)
 
-# Part II - Z-transform
+# Part II - Z-transform {.section-slide}
 
-##  Z-transform
+##  Z-transform {.small-slide}
 
 Definition: $H(z) = \sum_{n = -\infty}^{+\infty} h(n) z^{-n}$, called the **Transfer function**
 
@@ -250,7 +273,7 @@ Causal case: $R = \inf \{ |z|, z \in \CC / \sum h(n)z^{-n} < + \infty \}$
 | Properties                  | causal , stable if $|a| < 1$  | anti-causal, stable if $|a| > 1$  |
 
 
-## Parte III - Recursive filters
+# Parte III - Recursive filters {.section-slide}
 
 ## Recursive filters
 
@@ -387,7 +410,7 @@ Properties (if $y = h \ast x$):
 ![](image)
 
 
-# Part IV - FIR filters: window method
+# Part IV - FIR filters: window method {.section-slide}
 
 ## Window methods
 
@@ -488,4 +511,6 @@ $$
   - do not have a constant amplitude
   - are the same in passband and stopband
 
-# The end {.unlisted}
+## The end {.unlisted .center}
+
+Questions?
