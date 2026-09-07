@@ -1,0 +1,17 @@
+::: {.hidden}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\RR}{\mathbb{R}}
+\renewcommand{\implies}{\Rightarrow}
+\renewcommand{\iff}{\Leftrightarrow}
+\newcommand{\sinc}{\operatorname{sinc}}
+\newcommand{\sign}{\operatorname{sign}}
+
+\newcommand{\eipiv}{e^{i 2 \pi \nu}}
+
+\newcommand{\calD}{\mathcal{D}}
+
+\newcommand{\sumkN}{\sum_{k=0}^N}
+
+\newcommand{\vbone}{\mathbf{1}}
+:::

@@ -1,0 +1,341 @@
+---
+title: "Filter synthesis"
+author: "Diego DI CARLO (on behalf of Roland Badeau)"
+format: 
+    revealjs:
+        smaller: true
+        theme: dark
+lightbox: auto
+---
+
+# Part I - Linear phase FIR filters
+
+{{< include _macros.qmd >}}
+
+## linear phase FIR filters
+
+Impulse response: $h(n) \in \RR$, $n= 0, \ldots, N-1$
+
+Frequency response: $H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$
+
+Constant and equal group and phase delays (if $\beta = 0$)
+
+Advantages:
+
+- always **causal and stable**
+- preserve the waveform af a narrow-band signal (if $\beta = 0$)
+
+Drawbacks:
+
+- high computational complexity
+
+## Characterization
+
+- "1-periodicity" of $H(\eipiv) \implies \alpha = p/2, p\in \ZZ$ and $H_R$ is "2-periodic"
+- **Hermitian symmetry** $\implies$ $d = e^{2 i \pi \beta}=1$ or $i$ and $H_R$ is even or odd
+- As $H_R(\nu)$ is "2-periodic", we can define $G(\eipiv)=d H_R(2 \nu)$ where $g(n)$ is real, even or odd
+- We can thus write $H(z^2) = z^{-p} G(z)$ (filter of lenght $2N-1$)
+- We choose $p = N -1$ for a  causal filter
+- **4 possibilities** depending on $d$ and the parity of $N$:
+  - $d=1$, $N$ even or odd: $h(n) = h(N-1-n)$
+  - $d=i$, $N$ even or odd: $h(n) = - h(N-1-n)$
+
+## Types of filters
+
+### Type 1
+$N$ odd, symmetric ($d=1$)
+
+![Type 1 filter](./images/fig23.pdf)
+
+$$
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} a_n \cos(2\pi \nu n)
+$$
+
+- Use: low-pass, high-pass, band-pass
+
+## Types of filters
+
+### Type 2
+$N$ even, symmetric ($d=1$)
+
+![Type 1 filter](./images/fig24.pdf)
+
+$$
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} b_n \cos\left(2\pi \nu \left(n - \frac12\right)\right)
+$$
+
+- Property: $H(-1)=0 (\nu=\frac12)$
+- Use: low-pass, band-pass
+
+## Types of filters
+
+### Type 3
+$N$ odd, anti-symmetric ($d=i$)
+
+![Type 1 filter](./images/fig25.pdf)
+
+$$
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} c_n \sin (2 \pi \nu n)
+$$
+
+- Property: $H(1)=H(-1)=0 \quad (\nu=0 \text{ or } \frac12)$
+- Use: 
+  - Differentiator: $H(f)=i 2 \pi f$
+  - Hilber transform: $H(f)= - i \sign(f)$ in bass-pass form
+
+## Types of filters
+
+### Type 4
+$N$ even, anti-symmetric ($d=i$)
+
+![Type 1 filter](./images/fig26.pdf)
+
+$$
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} d_n \cos\left(2\pi \nu \left(n - \frac12\right)\right)
+$$
+
+- Property: $H(1)=H(-1)=0 \quad (\nu=0 \text{ or } \frac12)$
+- Use: 
+  - Differentiator: $H(f)=i 2 \pi f$
+  - Hilber transform: $H(f)= - i \sign(f)$ in high-pass form
+
+## Differentiatiors
+
+![Differentiatiors](./images/fig27.pdf)
+
+## Hilbert tranform
+
+![Schematics of the Hilbert tranform](./images/fig28.pdf)
+
+## Position of the zeros
+
+Complex zero outside the unit circle
+
+$$
+  (1 - \rho e^{i \theta} z^{-1})
+  (1 - \rho e^{-i \theta} z^{-1})
+  (1 - \frac1\rho e^{i \theta} z^{-1})
+  (1 - \frac1\rho e^{- i \theta} z^{-1})
+$$
+
+![Position of the zeros](./images/fig30.pdf)
+
+## Position of the zeros
+
+
+::: {layout-ncol="3"}
+
+::: {.column}
+Zero on the unit circle
+
+![](./images/fig31.pdf)
+
+:::
+
+::: {.column}
+Real zero
+
+![](./images/fig32.pdf) 
+
+:::
+
+::: {.column}
+Real zero on the unit circle
+
+![](./images/fig33.pdf)
+:::
+
+:::
+
+## Summary
+
+::: {layout-ncol="4" layout-align="center" style="text-align:center"}
+
+Type I\
+$N$ odd\
+symmetric
+
+![](images/fig34.svg)
+
+-
+
+Low-Pass\
+High-pass\
+Band-pass
+
+:::
+
+::: {layout-ncol="4" layout-align="center" style="text-align:center"}
+
+Type II\
+$N$ even\
+symmetric
+
+![](images/fig35.svg)
+
+$H(-1) = 0$
+
+Low-Pass\
+Band-pass
+
+:::
+
+::: {layout-ncol="4" layout-align="center" style="text-align:center"}
+
+Type III\
+$N$ odd\
+anti-sym.
+
+![](images/fig36.svg)
+
+$H(1)=H(-1) = 0$
+
+Differentiator\
+Hilber Transform\
+Band-pass
+
+:::
+
+::: {layout-ncol="4" layout-align="center" style="text-align:center"}
+
+Type IV\
+$N$ even\
+anti-sym.
+
+![](images/fig37.svg)
+
+$H(1)- = 0$
+
+Differentiator\
+Hilber Transform\
+High-pass
+
+:::
+
+## Part II - FIR filters: iterative methods
+
+### Advantages
+- Optimal design
+- Flexible method
+- Constant amplitude ripples
+- Minimum order for a given *template*
+
+### Drawbacks
+- Computational demanding **synthesis**
+- Not suitable for real-time processing
+- Not suitable for long filters ($\to$ numerically stability issues)
+
+## Filter template
+
+![Filter template](./images/fig56.svg)
+
+## Parameterization of $H_R$
+
+Factorization $H_R(\nu)=P(\nu)Q(\nu)$
+
+$$
+\begin{array}{|c|c|c|}
+\hline
+H_R(\nu) & P(\nu) & Q(\nu) \\ \hline
+\sum\limits_{n=0}^{\frac{N-1}{2}} a_n \cos(2\pi \nu n) & \sum\limits_{n=0}^{\frac{N-1}{2}} a_n \cos(2\pi \nu n) & 1 \\
+\sum\limits_{n=1}^{\frac{N}{2}} b_n \cos\left(2\pi \nu \left(n-\frac{1}{2}\right)\right) & \sum\limits_{n=0}^{\frac{N}{2}-1} b'_n \cos(2\pi \nu n) & \cos(\pi \nu) \\
+\sum\limits_{n=1}^{\frac{N-1}{2}} c_n \sin\left(2\pi \nu n\right) & \sum\limits_{n=0}^{\frac{N-3}{2}} c'_n \cos(2\pi \nu n) & \sin(2\pi \nu) \\
+\sum\limits_{n=1}^{\frac{N}{2}} d_n \sin\left(2\pi \nu \left(n-\frac{1}{2}\right)\right) & \sum\limits_{n=0}^{\frac{N}{2}-1} d'_n \cos(2\pi \nu n) & \sin(\pi \nu) \\ \hline
+\end{array}
+$$
+
+## Remez method
+
+
+Problem formulation: minimization of the error
+$$
+  E(\nu)= W(\nu) | H_D(\nu)  - H_R(\nu)|
+$$
+with $N$, $\nu_c$, and $\nu_a$ fixed
+
+- We set 
+  - $W(\nu)=1/\delta_1$ in passband
+  - $W(\nu)=1/\delta_2$ in stopband
+  - $W(\nu)=0$ in transition band
+- With $P(v) = \sum_{n=0}^M a_n \cos(2 \pi \nu n)$, we get:
+  
+$$
+\begin{align}
+  E(\nu)
+    &= W(\nu) (H_D(\nu) - P(\nu)Q(\nu))\\
+    &= W'(\nu)(H'_D(\nu) - P(\nu))
+\end{align}
+$$
+
+## Alternance theorem
+
+Minimization in Chebyshev sense:
+$$
+  H(\eipiv) = \min_H \| E(\nu) \|_\infty
+$$
+on a closed set of frequencies $B$
+
+
+::: {.callout style="font-size: 1.3em;"}
+### Alternance theorem
+
+The unique and best approximation is obtained when there exist $M+2$ frequencies $\nu_0, \ldots, \nu_{M+1}$ in $B$ such that $E(\nu_k)= \pm (-1)^k \delta$ where $\delta = \| E(\nu) \|_\infty$
+:::
+
+## Remez algorithm
+
+1. Initialization: the $M+2$  alternances are set uniformely in $B$
+2. Iteration
+    1. Direct resolution of the linear system\
+    $$ 
+      \sum_{k=0}^{M} a_n \cos(2 \pi \nu_k n) + 
+      \frac{(-1)^k \delta}{W(\nu_k)} = H_D(\nu_k)
+    $$\
+    (or solution by Lagrangian interpolation)
+    2. Search of the extrema of this polynomial
+    3. Choice of the new values of the $\nu_k$
+3. Convergence in a few iterations
+
+## Remez methods - illustration
+
+::: {.r-stack}
+![Iteration 1](images/fig61.svg){.fragment width="70%"}
+
+![Iteration 2](images/fig62.svg){.fragment width="70%"}
+
+![Iteration 3](images/fig63.svg){.fragment width="70%"}
+
+![Filter](images/fig64.svg){.fragment width="70%"}
+
+:::
+
+# Part III - Eigenvalues methods
+
+Skip $\to$ part of the first tutorial
+
+# Part IV - Synthesis of recursive filters
+
+##  Generalities
+
+### Example
+
+$N(z) = \prod_k (1 - z_k z^{-1})$ with zeros at frequencies 0.1, 0.2, 0.3, 0.4, 0.5
+
+![](images/fig65.svg){width="60%" fig-align="center"}
+
+##  Generalities
+
+### Example
+
+$N(z) =N(z)/D(z)$ where $D(z)=(1 - p z^{-1})(1 - p^\ast z^{-1})$, with $p = 0.95 e^{i 2 \pi 0.085}$
+
+![](images/fig66.svg){width="60%" fig-align="center"}
+
+## Low-pass recursive filters
+
+Position of the poles and zeros
+
+![](images/fig67.svg){width="100%" fig-align="center"}
+
+## Rejector filter (audio feeback)
+

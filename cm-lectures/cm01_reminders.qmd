@@ -1,0 +1,492 @@
+---
+title: "Reminders"
+author: "Diego DI CARLO (on behalf of Roland Badeau)"
+format: 
+    revealjs:
+        smaller: true
+        theme: dark
+---
+
+# Course introduction
+
+{{< include _macros.qmd >}}
+
+## Representation of signal (4AI01)
+
+. . .
+
+This course introduces various digital signal processing tool:
+
+-  Reminders about filtering, Z-transform, and recursive filters
+-  Filter synthesis methods
+-  Conversion of the sampling rate
+-  Short-time Fourier tranform
+-  Filter banks
+-  Wavelets
+
+::: {.notes}
+Speaker notes go here.
+:::
+
+. . .
+
+These notions are related to various courses in the SPAI study track:
+
+- multirate processing and filterbank allow us to pre-process signals before applying machine learning methods
+- they find many application, incuding denoising
+- time-frequency representation are essential tools in speech processing, audio, and multimedial signal processing
+
+
+## Program of the course unit
+
+1. [Lesson *Reminders*]{.fragment fragment-index=0} [$\leftarrow$ today]{.fragment fragment-index=10}
+2. [Lesson *Filter synthesis*]{.fragment fragment-index=1} [$\leftarrow$ today]{.fragment fragment-index=10}
+3. [Lesson *Frequency conversion*]{.fragment fragment-index=2}
+4. [Lesson *Short time Fourier transform*]{.fragment fragment-index=3}
+5. [Practical work *Frequency conversion, STFT*]{.fragment fragment-index=4}
+6. [Tutorial *Filter  synthesis*]{.fragment fragment-index=5}
+7. [Lesson + Tutorial *Filter bank*]{.fragment fragment-index=6}
+8. [Lesson *Wavelets*]{.fragment fragment-index=7}
+9. [Practical work *Wevelets*]{.fragment fragment-index=8}
+10. [Written examination]{.fragment fragment-index=9}
+
+## Educational resources
+
+. . .
+
+### Website 
+
+`https://moodle.ip-paris.fr/` (English/French)
+
+- Links to the course **handout** + **slides**
+- Subjects of tutorials and practial works + data
+- Solution availabile online after every tutorial
+- Online submission of the practial works reports
+
+. . . 
+
+### New grading for this year
+
+- Practial works will not be graded, but negative points if not submitted or if not writteng careffully
+- Presence at lab sessions is mandatory at `TelecomParis: negative points if an absence is not duly justified
+- Written examination will include detailed questions on the practical works
+
+# Part I: Discrete Filtering
+
+## Signal and filters
+
+A **signal** is a esquence of real (or complex) number  $x(n)$ for all $n \in \ZZ$
+
+A **filter** is a tranform which turns a signal into another, which is assumed here to be linear and time invariance
+
+- $x(n)$ and $y(n)$ are the *input* and *output* respectively
+- for any $m \in \ZZ$, the filter trasform $x(n-m)$ into $y(n-m)$
+
+::: {.columns}
+::: {.column width="60%"}
+
+All filters are characterize by their **Impulse Response** $h(n)$,
+
+- the trasform of the impulse signal $h(n) = \delta_0(n)$
+
+::: {.callout}
+### Convolution product
+
+The general relationship between input and output signal is a *convolution product*
+$$
+    y(n) = \sum_{m\in\ZZ} h(m) x(n - m)
+$$
+:::
+:::
+
+
+::: {.column layout="[[-1], [1], [-1]]"  width="40%"}
+
+![](https://quincyaflint.weebly.com/uploads/2/6/5/0/26500868/convolution-1-fast_orig.gif){fig-align="center"}
+
+:::
+
+:::
+
+
+
+## Causality and stability
+
+::: {.notes}
+Beyond linearity and invariance to translation over time, we usually expect a filter to satisfy the following two conditions
+:::
+
+### Causality
+
+- Definition: $y(n)$ only depends on $x(k)$ , $k \leq n$
+- Necessary and sufficient condition: $h(m)=0$ if $m<0$ (proof in the notes)
+- Property:  
+    causal input $\implies$ causal output
+- Remark: compulsory for real-time processing
+
+### Stability
+
+- Definition: bounded input $\implies$ bounded output
+- Necessary and sufficient condition $\sum_{m=-\infty}^{\infty} | h(m) | < +\infty$ (aka, $h \in l^1(\ZZ)$)
+- Property: continuous frequency response
+- Remark: this is numerically compulsory
+  - If $x_q = x + e$, then $y_q = y + h\ast e$
+  - If $h\in l^1(\ZZ)$, $\| h \ast e \|_{\infty} < \|h\|_1 \|e\|_\infty$, otherwise $h\ast e$ may diverge
+
+## Ideal filters
+
+### Low pass filter (periodic spectrum)
+
+- Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } |\nu| < \nu_c \\ 0 &\mbox{if } |\nu| > \nu_c \end{cases}$
+- Impulse response: $h(n) = 2 \nu_c \sinc(2\pi \nu_c n)$
+
+. . .
+
+### Exercise: band-pass filter
+
+- Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } ||\nu|-|\nu_0|| < \nu_c \\ 0 &\mbox{if } ||\nu|-|\nu_0|| > \nu_c \end{cases}$
+- Impulse response: $h(n)=4 \nu_c \sinc(2 \pi \nu_c n) \cos(2 \pi \nu_0 n)$
+
+### Causality? Stability?
+
+## Transient and steady states
+
+### Example:
+- $x(n)$ is a unit step signal: $x(n) = 1_{[0,+\infty[}(n)$
+- $h(n)$ is an averaging filter: $h(n) = \frac1N 1_{[0,N-1[}(n)$
+
+We observe:
+
+- From $n=0$ to $N-2$: transient state $\to$ ramp
+- From $n=N-1$ to $+\infty$: steady state $\to$ constant signal
+
+## Phase and group delays
+
+Frequency response: $H(\eipiv)=H_R(\nu) e^{i \phi(\nu)}$
+
+Phase and group delays
+
+$$
+\begin{cases}
+  \tau_p(\nu_0) &= - \frac{1}{2\pi} \frac{\phi(\nu_0)}{\nu_0}\\
+  \tau_g(\nu_0) &= - \frac{1}{2\pi} \frac{d \phi}{\nu}{\nu_0}
+\end{cases}
+$$
+
+Frequency response in the neighborhood of $\nu_0$
+
+$$
+  H(\eipiv) \simeq H_R(\nu_0) e^{- i 2 \pi (\nu_0 \tau_p(\nu_0) + (\nu - \nu_0) \tau_g(\nu_0))}
+$$
+
+Filtering of a *narrowband* signal ($y = h \ast x)$
+$$
+  x(n) = a(n) e^{i 2 \pi \nu_0 n} \implies y(n) \simeq H_R(\nu_0) a(n - \tau_g(\nu)) e^{i 2 \pi \nu_0(n - \tau_p(\nu_0))}
+$$
+
+Linear phase filters (= the delay is constant)
+
+# Part II - Z-transform
+
+##  Z-transform
+
+Definition: $H(z) = \sum_{n = -\infty}^{+\infty} h(n) z^{-n}$, called the **Transfer function**
+
+Domain of convergence: $\calD = \{ z \in \CC \mbox{ s.t. } \sum_{n=-\infty}^{+\infty} |h(n)| |z|^{-n} < + \infty \}$
+
+Causal case: $R = \inf \{ |z|, z \in \CC / \sum h(n)z^{-n} < + \infty \}$
+
+::: {.columns}
+
+::: {.column}
+
+- FIR filters: $\calD = \CC \ 0$ or $\infty$
+- Anti-causality: $\calD$ is a disk
+- **Causality:** $\calD$ is the complement of a disk
+- General case:** $\calD$ is a ring (or $\emptyset$)
+
+::: 
+
+::: {.column}
+![Z-transform](https://www.oreilly.com/api/v2/epubs/urn:orm:book:9781118393956/files/OEBPS/images/nbapp03f003.jpg)
+:::
+:::
+
+## Basic properties
+
+- **Stability:** the ring $\calD$ contains the unit circle
+  - The ZT matches the DTFT on the unit circle
+- Linearity: $a_1 h_1 + a_2 h_2 \to a_1 H_1 + a_2 H_2$ with ($\calD \supset \calD_1 \supset \calD_2$)
+- Delay: $y(n) = x(n-k) \iff Y(n)=z^{-k} X(z)$
+- Convolution product
+  - if $y = h\ast x$, then $Y(z)=H(z)X(z)$, $\calD_y \supset \calD_h \cap \calD_x$
+- Insertion of zeros: $Y(z) = X(z^L) \iff y(nL) = x(n)$, $y=0$ elsewere
+- Inverse filter
+  - if $h \ast h_i = \delta$, then $H(z)H_i(z) = 1$ for $z \in \calD_h \cap \calD_{h_i}$
+
+## Example of ZT
+
+- $h(n) = \delta(n)$ $\implies$ $H(z) = 1$, $\quad\forall z \in \CC$
+- $h(n) = 1_{[0,+\infty[}(n)$ $\implies$ $H(z) = \frac{1}{1 - z^{-1}}$, $\quad\forall |z| > 1$
+- $h(n) = 1_{[0,\ldots,N-1[}(n) \implies H(z) = \frac{1 - z^{-N}}{1 - z^{-1}}$, $\quad\forall |z| \neq 0$
+- AR1 filter:
+  - $h(n) = \begin{cases}a^n &\text{if } n\geq 0 \\ 0 &\text{if } n < 0\end{cases} \implies H(z) \frac{1}{1 - a z^{-1}}$ with $\calD = \{ z \in \CC / |z| > |a|\}$
+  - $h(n) = \begin{cases}-a^n &\text{if } n< 0 \\ 0 &\text{if } n \geq 0\end{cases} \implies H(z) \frac{1}{1 - a z^{-1}}$  with $\calD = \{ z \in \CC / |z| < |a|\}$
+
+## Autoregressive filter of order 1 {.center}
+
+::: {.callout}
+## Autoregression filter of order 1
+
+- input/output relationship : $y(n) - a y(n-1) = x(n)$
+- Transfer function: $H(z) = \frac{1}{1 - a z^{-1}}$
+
+:::
+
+|                             |                               |                                   |
+|-----------------------------|:-----------------------------:|:---------------------------------:|
+| Implementation              | $y(n)=a y(n-1) + x(n)$        | $y(n)= \frac{y(n+1) + x(n+1)}{a}$ |
+| IR ($x(n)=\delta_0(n)$)     | $h(n) = a^n 1_{\{n\geq 0\}}$  | $h(n) = a^n 1_{\{n\geq 0\}}$      |
+| Domain                      | $\{ z \in \CC / |z| < |a| \}$ | $\{ z \in \CC / |z| < |a| \}$     |
+| Properties                  | causal , stable if $|a| < 1$  | anti-causal, stable if $|a| > 1$  |
+
+
+## Parte III - Recursive filters
+
+## Recursive filters
+
+Input-output relationship
+
+$$
+\sum_{k=0}^N a_k y(n-k) = \sum_{k=0}^M b_k x(n - k)
+$$
+
+Computation of the output (causal implementation)
+$$
+y(n) = \frac{1}{a_0} \left[  \sum_{k=0}^{M} b_k x(n - k) - \sum_{k=1}^N a_k y(n - k) \right]
+$$
+
+Transfer function
+
+$$
+  H(z) 
+    = \frac{\sum_{k=0}^M b_k z^{-k}}{\sum_{k=0}^N a_k z^{-k}}
+    = \frac{b_0}{a_0} \frac{\prod_{k=1}^M  (1 - c_k z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})}
+$$
+
+
+## Example of recursive filters
+
+Auto-regression filters (if $M=0$, AR of order $N$)
+
+$$
+  y(n) = \frac{b_0}{a_0} x(n) - \sum_{k=1}^N \frac{a_k}{a_0} y(n - k)
+$$
+
+Finite Impulse Response (FIR) filters
+
+- If $N=0$, FIR filter of length $M$
+  $$
+    h(n) = \begin{cases} \frac{b_n}{a_0} &\text{if } n=0,\ldots,M\\ 0 &\text{otherwise}\end{cases}
+  $$
+- Casual filters, uncoditionally stable
+- If the IR is symmentric or anti-symmetric, the phase is linear
+
+
+## Recursive filters
+
+::: {.callout}
+### Transfer function of a recursive filter
+$$
+  H(z) 
+    = \frac{\sum_{k=0}^M b_k z^{-k}}{\sum_{k=0}^N a_k z^{-k}}
+    = \frac{b_0}{a_0} \frac{\prod_{k=1}^M  (1 - c_k z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})}
+$$
+:::
+
+- Defition of poles and zeros
+- Domain of convergence: $\calD$ is a ring bounded by 2 poles, with no pole inside
+- **Stable** filter $\to$ $\calD$ is the largest ring containing the unit circle and no pole
+- **Stable and causal** filters $\to$ whose poles are all strictly inside the unit circle
+- if the $a_k$ and $b_k$ are real, the poles and zeros are either real, or they form conjugate pairs
+
+
+## Computation of the IR from the ZT
+
+1. If necessary, extract from $H(z)$ a term in $z^n$, so that the numerator and denominator of $H(z)$ only contain negative powers of z plus a constant
+2. Factorize the numerator and denominator as product of monomials of $z^{-1}$
+3. Partial fraction decomposition of $H(z)$ as a function of $z^{-1}$
+4. Expansion in power series
+  - of $z^{-1}$ if we compute the causal IR, of if we compute the stable IR and if the pole is inside the unit circle
+  - of $z$ if we compute the anti-causal IR, or if we compute the stabel and if the pole is outside of the unit circle 
+5. Indetidy the resulting expression with $H(z) = \sum_{n\in \ZZ} h(n)z^{-n}$
+
+Example: $H(z) = \frac{1}{1 - \frac52 z^{-1}  + z^{-2}}$
+
+## Geometric interpretation of the FR
+
+Example (AR2 filter):
+$$
+H(z) = \frac1{1 + a_1 z^{-1} + a_2 z^{-2}} = \frac1{(1 - p z^{-1}) (1 - p^\ast z^{-1})}
+$$
+
+![]()
+
+$$
+|H(z)| = \frac1{PM \times QM}
+$$
+$$
+\arg H(z) = 2 \arg(OM) - \arg(PM) - \arg(QM)
+$$
+
+## Spectral factorization
+
+Factorization of the transfer function
+
+$$
+  H(z) 
+    = \frac{b_0}{a_0} \frac{\prod_{k=1}^M  (1 - c_k z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})}
+$$
+
+Amplitude respense ($z = \eipiv)$
+
+$$
+  | H(\eipiv) |^2 = H(z) H(1/z^\ast) 
+    = \left| \frac{b_0}{a_0} \right|^2 \frac{\prod_{k=1}^M  (1 - c_k z^{-1})(1 - c_k^\ast z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})(1 - d_k^\ast z^{-1})}
+$$
+
+- Poles of $| | < 1$: stability + causality
+- Zeros of $| | < 1$: minimal phase 
+
+## All-pass filters
+
+Definition: $H(z) = \prod_{k=1}^N \frac{z^{-1} - c_k^\ast}{1 - c_k z^{-1}$ where $| c_k | < 1$ $\forall k$
+
+$H(z)$ is all-pass, *causal* and stable
+
+Properties (if $y = h \ast x$):
+
+- $\sum_{n=-\infty}^{\infty} | x(n) |^2 = \sum_{n=-\infty}^{+\infty} | y(n) |^2$
+- An all-pass filter is such that $\sum_{n=-\infty}^{N} |x(n)|^2 \geq \sum_{n=-\infty}^{N} |y(n)|^2$  
+  Proof hint: $x_N(n) = x(n) \times  1_{]-\infty, N]}(n)$
+
+## Spectral factorization
+
+![](image)
+
+## Minimal phase filters
+
+- Definition: filter whose poles and zeros are all inside the unit circle
+- Any causal and stable recursive filter is the product of all-pass filter and a minimal phase filter
+- Properties (if $g$ is causal and stable, $y = g \ast x$ and $|G| = |G_m|$)
+  - The inverse filter is also stable and causal
+  - $\sum_{n = -\infty}^{+\infty} | y(n) |^2 \geq \sum_{n=-\infty}^N |y(n)|^2$
+  - $g_m$ has the lowest group delay
+
+## Miminal phase filters
+
+![](image)
+
+
+# Part IV - FIR filters: window method
+
+## Window methods
+
+### Example: the low-pass filter
+
+Ideal low-pass filter $h(n)= 2 \nu_c \sinc(2 \nu_c n)$
+
+- The respense is IIR, non-causal, non-stable
+
+Synthesis of a type I causal FIR filter
+
+- Trunctaion and temporal shift
+
+## Gibbs phenonemon
+
+![Illustration of the Gibbs effect]()
+
+## Choice of a suitable window
+
+$$
+  h(n) = 2 \nu_c \sinc(2 \nu_c n) w(n)
+$$
+
+where $w(n)$ is a symmetric window of a finite support
+
+![Window](images/fig53.pdf)
+
+## Rectangular window
+
+$$
+  w(n) = \vbone_{[0,P-1]}(n)
+$$
+
+- width: $\frac{2}{P}$
+- second lobe: -13 dB
+- decrease rate: -6 dB / octave
+
+![Rectangular window](images/fig16.pdf)
+
+## Barlett (triangular) window
+
+$$
+  w(n) = 1 - \left| \frac{2n}{P-1} - 1 \right|
+$$
+
+- width: $\frac4P$
+- second lobe: -26 dB
+- decrease rate: -12 dB / octave
+
+![Barlett window](images/fig17.pdf)
+
+## Hann window
+
+$$
+  w(n) = 0.5 - 0.5 \cos \left( 2 \pi \frac{n}{P-1} \right)
+$$
+
+- width: $\frac4P$
+- second lobe: -26 dB
+- decrease rate: -12 dB / octave
+
+![Hann window](images/fig18.pdf)
+
+## Hamming window
+
+$$
+  w(n) = 0.54 - 0.46 \cos \left( 2 \pi \frac{n}{P-1} \right)
+$$
+
+- width: $\frac4P$
+- second lobe: -41 dB
+- decrease rate: -6 dB / octave
+
+![Hamming window](images/fig19.pdf)
+
+## Blackman window
+
+$$
+  w(n) = 0.4266 - 0.4965 \cos\left( 2 \pi \frac{n}{P-1} \right) + 0.076  \cos \left( 4 \pi \frac{n}{P-1} \right)
+$$
+
+- width: $\frac6P$
+- second lobe: -57 dB
+- decrease rate: -18 dB / octave
+
+## Window method
+
+### Advantages
+
+- Stability, causality
+- Linear phase filter if symmetric window
+
+### Drawbacks
+
+- the transition bands are widened
+- the spurious ripples
+  - are due to side lobes
+  - do not have a constant amplitude
+  - are the same in passband and stopband
+
+# The end {.unlisted}
