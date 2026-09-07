@@ -2,9 +2,8 @@
 title: "Reminders"
 author: "Diego DI CARLO (on behalf of Roland Badeau)"
 format: 
-    revealjs:
-        smaller: true
-        theme: dark
+    dtslides-revealjs:
+      slide-number: c/t
 ---
 
 # Course introduction
