@@ -900,12 +900,12 @@ $$
     = \left| \frac{b_0}{a_0} \right|^2 \frac{\prod_{k=1}^M  (1 - c_k z^{-1})(1 - c_k^\ast z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})(1 - d_k^\ast z^{-1})}
 $$
 
-- Poles of $| | < 1$: stability + causality
-- Zeros of $| | < 1$: minimal phase 
+- Poles of $|z| < 1$: stability + causality
+- Zeros of $|z| < 1$: minimal phase 
 
 ## All-pass filters {.small-slide}
 
-Definition: $H(z) = \prod_{k=1}^N \frac{z^{-1} - c_k^\ast}{1 - c_k z^{-1}$ where $| c_k | < 1$ $\forall k$
+Definition: $H(z) = \prod_{k=1}^N \frac{z^{-1} - c_k^\ast}{1 - c_k z^{-1}}$ where $| c_k | < 1$ $\forall k$
 
 $H(z)$ is all-pass, *causal* and stable
 
@@ -917,7 +917,7 @@ Properties (if $y = h \ast x$):
 
 ## Spectral factorization {.small-slide}
 
-![](image)
+![](images/fig9.svg)
 
 ## Minimal phase filters {.small-slide}
 
@@ -930,26 +930,68 @@ Properties (if $y = h \ast x$):
 
 ## Minimal phase filters {.small-slide}
 
-![](image)
+![](images/fig10.svg)
 
 
 # Part IV - FIR filters: window method {.section-slide}
 
-## Window methods
+## Window methods {.tiny-slide}
 
-### Example: the low-pass filter
-
-Ideal low-pass filter $h(n)= 2 \nu_c \sinc(2 \nu_c n)$
+**Example:** Ideal low-pass filter $h(n)= 2 \nu_c \sinc(2 \nu_c n)$
 
 - The respense is IIR, non-causal, non-stable
 
-Synthesis of a type I causal FIR filter
+::: {layout="[100,-20,100]" layout-valign="center"}
+
+![](./images/fig39.svg){style="height:120px" fig-align="right"}
+
+![](./images/fig38.svg){style="height:120px" fig-align="left"}
+
+:::
+
+
+::: {.notes}
+
+Let us consider an ideal frequency response, such that one of a ideal low pass filter
+
+which has a flat response between to cut off frequencies $\pm \nu_c$
+
+The impulse response is known in closed form, and we know that it is infitine, non-causal and non-stable
+
+We can built a finite impulse response by moltiplying this by a finite window, in the time domain
+
+- that is apply a trucation
+
+:::
+
+
+. . . 
+
+Synthesis of a Type I causal FIR filter
 
 - Trunctaion and temporal shift
 
+::: {layout="[100,-20,100]" layout-valign="center"}
+
+![](./images/fig40.svg){style="height:120px" fig-align="right"}
+
+![](./images/fig41.svg){style="height:120px" fig-align="left"}
+
+:::
+
+
+::: {.notes}
+
+HERE
+
+
+:::
+
+
+
 ## Gibbs phenonemon
 
-![Illustration of the Gibbs effect]()
+![Illustration of the Gibbs effect](images/fig42.svg){width=50%}
 
 ## Choice of a suitable window
 
@@ -959,7 +1001,7 @@ $$
 
 where $w(n)$ is a symmetric window of a finite support
 
-![Window](images/fig53.pdf)
+![Window](images/fig53.svg){width=50%}
 
 ## Rectangular window
 
@@ -971,7 +1013,7 @@ $$
 - second lobe: -13 dB
 - decrease rate: -6 dB / octave
 
-![Rectangular window](images/fig16.pdf)
+![Rectangular window](images/fig16.svg)
 
 ## Barlett (triangular) window
 
@@ -983,7 +1025,7 @@ $$
 - second lobe: -26 dB
 - decrease rate: -12 dB / octave
 
-![Barlett window](images/fig17.pdf)
+![Barlett window](images/fig17.svg)
 
 ## Hann window
 
@@ -995,7 +1037,7 @@ $$
 - second lobe: -26 dB
 - decrease rate: -12 dB / octave
 
-![Hann window](images/fig18.pdf)
+![Hann window](images/fig18.svg)
 
 ## Hamming window
 
@@ -1007,7 +1049,7 @@ $$
 - second lobe: -41 dB
 - decrease rate: -6 dB / octave
 
-![Hamming window](images/fig19.pdf)
+![Hamming window](images/fig19.svg)
 
 ## Blackman window
 
