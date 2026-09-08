@@ -5,11 +5,15 @@ author:
   - name: "Diego DI CARLO"
     affiliation: ADASP / S2A, IDS, LTCI
 date: last-modified
-format: 
+format:
     dtslides-revealjs:
       slide-number: c/t
       footer: "2026-2026 / 4AI01 - Signal Representation / Reminders"
       css: style.css
+resources:
+  - ./widgets/cm01_roc-explorer.html
+  - ./widgets/cm01_geometric_fr.html
+
 lightbox: auto
 ---
 
@@ -724,48 +728,161 @@ The transfer function of a recursive filter tells us some properties of of the d
 
 :::
 
+## Interactive visualization
 
-## Computation of the IR from the ZT {.tiny-slide}
+<iframe src="widgets/cm01_roc-explorer.html?cols=2,2,3" width="100%" height="100%"
+        style="border:none;" loading="lazy"></iframe>
 
-1. If necessary, extract from $H(z)$ a term in $z^n$, so that the numerator and denominator of $H(z)$ only contain negative powers of z plus a constant
+
+
+::: {.notes}
+
+Suggested visualization:
+
+- 2 poles inside the circle $\to$ only the outer ring contains the unit circle
+- Push $d_2$ past 1 $\to$ now the middle ring is the stable one
+  - only the mixed implementation is stable
+  - stability and causality are separate 
+- Push both poles outside (1.4, 1.6) $\to$  the inner circle becomes stable
+  - the filter is purerly anti-causal
+  - stability is not only "decaying"
+- slide $d_2$ toward 0.1 $\to$ tje middle ring collapses onto the unit circle 
+  - no ring contains it
+- make a pole negative (-0.8) $\to$ this make alternative impulse response
+  - a pole near z=-1 make a resonance at the nyquits frequency
+
+
+:::
+
+
+## Computation of the IR from the ZT {.tiny-slide .scrollable}
+
+
+::: {.notes}
+
+In this slide we recall the methodology to compute the impulse response from the Z-transform
+
+:::
+
+::: {layout=[3,2] .small}
+\
+
+$H(z) = \frac{1}{1 - \frac52 z^{-1}  + z^{-2}}$
+:::
+
+::: {layout=[3,2] .small}
+1. If necessary, extract from $H(z)$ a term in $z^n$, so that numerator and denominator only contain negative powers of $z$ plus a constant
+
+Nothing to extract: already a ratio in $z^{-n}$
+:::
 
 . . . 
 
-2. Factorize the numerator and denominator as product of monomials of $z^{-1}$
+::: {layout=[3,2] .small}
+1. Factorize the numerator and denominator as product of monomials of $z^{-1}$
+
+$H(z) = \frac{1}{(1 - 2z^{-1})(1 - \tfrac12 z^{-1})}$
+:::
 
 . . .
 
-3. Partial fraction decomposition of $H(z)$ as a function of $z^{-1}$
+::: {layout=[3,2] .small}
+3. Compute the partial fraction decomposition of $H(z)$ as a function of $z^{-1}$
+
+$H(z) = \frac{4/3}{1-2z^{-1}} - \frac{1/3}{1-\frac12 z^{-1}}$
+:::
 
 . . .
 
-4. Expansion in power series
+::: {layout=[3,2] .small}
+::: {}
+4. Expansion this fractions in power series
+
   - of $z^{-1}$ if we compute the causal IR, of if we compute the stable IR and if the pole is inside the unit circle
-  - of $z$ if we compute the anti-causal IR, or if we compute the stabel and if the pole is outside of the unit circle 
+  - of $z$ if we compute the *anti*-causal IR, or if we compute the stable and if the pole is outside of the unit circle 
+:::
+
+::: {.small}
+ROC: $\tfrac12 < |z| < 2$:
+
+$\frac{1}{1-\tfrac12 z^{-1}} = \sum_{n\ge 0} 2^{-n} z^{-n}$
+
+$\frac{1}{1-2z^{-1}} = -\sum_{n\ge 1} 2^{-n} z^{n}$
+::: 
+
+:::
 
 . . .
 
-5. Identidy the resulting expression with $H(z) = \sum_{n\in \ZZ} h(n)z^{-n}$
+::: {layout=[3,2] .small}
+5. Identify the resulting expression with $H(z) = \sum_{n\in \ZZ} h(n)z^{-n}$
 
-## Example {.small-slide}
 
-Example: $H(z) = \frac{1}{1 - \frac52 z^{-1}  + z^{-2}}$
+::: {.small}
+$h(n) = \begin{cases}\frac23 (\frac12)^{n+1} - \frac23 2^{n+1} &n \ge 0\\0 & \text{else}\end{cases}$ 
+:::
+:::
 
 ## Geometric interpretation of the FR {.small-slide}
 
-Example (AR2 filter):
+### Example (AR2 filter):
 $$
 H(z) = \frac1{1 + a_1 z^{-1} + a_2 z^{-2}} = \frac1{(1 - p z^{-1}) (1 - p^\ast z^{-1})}
 $$
 
-![]()
+
+::: {.notes}
+
+The shape of the Frequency response of a recursive filter can be easily deduced from the expansion of its transfer function.
+
+Lets consider this, the causal AR2 filter, where we assume the coefficients form two poles in a conjugate pair.
+
+:::
+
+. . .
+
+<br>
+
+::: {.columns}
+
+::: {.column}
 
 $$
-|H(z)| = \frac1{PM \times QM}
+\begin{align}
+  |H(z)| &= \frac1{PM \times QM} \\
+  \arg H(z) &= 2 \arg(OM) \\
+            &\quad- \arg(PM) - \arg(QM)
+\end{align}
 $$
-$$
-\arg H(z) = 2 \arg(OM) - \arg(PM) - \arg(QM)
-$$
+
+:::
+
+::: {.column}
+
+<iframe src="widgets/cm01_geometric_fr.html" width="100%" height="380"
+        style="border:none;" loading="lazy"></iframe>
+
+:::
+
+:::
+
+::: {.notes}
+
+Let
+
+- M be the coordinate of the point in the Z-plane representing the complex number $z$
+- P be the point for $p$
+- and Q the point of the conjugate $p$
+
+Then PM and QM are the distances between these two points
+
+Applying the equation $z=\eipiv$, we can plot the magnitude of the frequency response $|H(\eipiv)|$
+
+Moving $\nu$ from 0 to $\frac12$, M travel over the unit cicle counter-clockwise, from 1 to 1
+
+When M is close to P, the distance PM is small, then the magnitude of $H(z)$ is high, producting a resonance peak.
+
+:::
 
 ## Spectral factorization {.small-slide}
 
