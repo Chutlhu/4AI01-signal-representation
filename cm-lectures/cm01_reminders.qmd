@@ -78,9 +78,10 @@ This concepts will be later fondamental
 ### New grading for this year
 
 - Practial works will not be graded, but negative points if not submitted or if not writteng careffully
-- Presence at lab sessions is mandatory at `TelecomParis: negative points if an absence is not duly justified
+- Presence at lab sessions is mandatory at Telecom Paris: negative points if an absence is not duly justified
 - Written examination will include detailed questions on the practical works
 :::
+
 
 # Part I: Discrete Filtering {.section-slide}
 
@@ -90,12 +91,22 @@ First definitions
 
 A **signal** is a sequence of real (or complex) number  $x(n)$ for all $n \in \ZZ$
 
+::: {.notes}
+In this course, a **signal** is a sequence of rear or complex numbers $x(n)$, efine for all times $n \in \ZZ$
+:::
+
 . . .
 
-A (linear and time invariance) **filter** is a tranform which turns a signal into another
+A linear and time invariance **filter** is a tranform which turns a signal into another
 
 - $x(n)$ and $y(n)$ are the *input* and *output* respectively
 - for any $m \in \ZZ$, the filter trasform $x(n-m)$ into $y(n-m)$
+
+::: {.notes}
+- A filter is a transform which turn s a signal into another signal, and which is both linear and invariant to translation.
+- y and x are respectively the **output** and the **input** of the filter
+- then for any integer $m$, the filter transform the translated version of the input into the translated version of the output
+:::
 
 . . .
 
@@ -109,13 +120,38 @@ $$
 $$
 :::
 
+::: {.notes}
+- It can be porvode that all the filters are characterized by their **impulse response**, that is, the transform of the **impulse signal **$\delta_0$
+- Then the general relationship between the input and the output signals is a **convolutional product** 
+  - defined as the discrete integral envaluated for all values of shifts
+- For the convolution product to be well defined, $h$ and $x$ need to satisfy some conditions:
+  - the most common is the BIBO: bounded input $\implies$ bounded output
+:::
+
 ::: {.column  width="35%"}
-<!-- ::: {.column layout="[[-1], [1], [-1]]"  width="35%"} -->
 
 ![](https://quincyaflint.weebly.com/uploads/2/6/5/0/26500868/convolution-1-fast_orig.gif){fig-align="center"}
 
 :::
 
+:::
+
+## Fourier transforms {.small-slide}
+
+
+Let $H(\eipiv)=\sum_{n\in\ZZ} h(n) e^{- 2 i \pi \nu n}$ and $X(\eipiv)=\sum_{n\in\ZZ} X(n) e^{- 2 i \pi \nu n}$ be the **Fourier transforms** of $h$ and $x$, reprectively, for all *normalized frequencies* $v\in\RR$
+
+Then, the Fourier transform of the **Convolution product** $y$ is
+$$
+  Y(\eipiv) = H(\eipiv) X(\eipiv)
+$$
+
+The function $H(\eipiv)$ is called the **Frequency Response** of the filter
+
+::: {.notes}
+- Signals and filters are usually studied in the Fourier domain
+- If both $h$ and $x$ have well-defined Fourier transform $H(\eipiv)$ and $X(\eipiv)$, where $\nu$ are the normalized frequencies
+- then, the convolution product can be computed as direct producton of the Fourier transformes of the filetr and the input.
 :::
 
 ## Causality and stability {.tiny-slide}
@@ -124,43 +160,80 @@ $$
 Beyond linearity and invariance to translation over time, we usually expect a filter to satisfy the following two conditions
 :::
 
-
 ::: {.fragment}
 ### Causality
 
 - Definition: $y(n)$ only depends on $x(k)$ , $k \leq n$
-- Necessary and sufficient condition: $h(m)=0$ if $m<0$ (proof in the notes)
-- Property: causal input $\implies$ causal output
+- Necessary and sufficient condition: $h(m)=0$ if $m<0$ (proof in the handout)
+- Property: causal input $\implies$ causal output (proof in the handout)
 - Remark: compulsory for real-time processing
+
+::: {.notes}
+- The causality is a compulsory condition when we need the filter to act in real-time.
+- A filter is causal if and only if, for any input signal $x(n)$, the output $y(n)= (h \ast x)(n)$ only depend on the past sample of $x$, that is, $x(k)$, for $k \leq n$.
+- Equivalently, causality is characterized by the necessary and sufficient condition that $h(n)$ is causal if and only if $h$ is zero for negative times.
+- As a consequence, if both the impulse response and the input signal are causal, then the output is causal
 :::
 
+:::
 
 ::: {.fragment}
-### Stability
+### (BIBO) Stability
 
 - Definition: bounded input $\implies$ bounded output
-- Necessary and sufficient condition $\sum_{m=-\infty}^{\infty} | h(m) | < +\infty$ (aka, $h \in l^1(\ZZ)$)
-- Property: continuous frequency response
+- Necessary and sufficient condition $\sum_{m=-\infty}^{\infty} | h(m) | < +\infty$ (i.e., $h \in l^1(\ZZ)$)
+- Property: filter's frequency response is continuous (proof in the notes)
 - Remark: this is numerically compulsory
   - If $x_q = x + e$, then $y_q = y + h\ast e$
-  - If $h\in l^1(\ZZ)$, $\| h \ast e \|_{\infty} < \|h\|_1 \|e\|_\infty$, otherwise $h\ast e$ may diverge
+  - If $h\in l^1(\ZZ)$, $\| h \ast e \|_{\infty} \leq \|h\|_1 \|e\|_\infty$, otherwise $h\ast e$ may diverge
+
+::: {.notes}
+- Next, the **stability** condition is **always** required whenever we want to numerically compute the output
+- The stability is defined as: a filter is stable if and only if, for any bounded input $x$, the output is also bounded
+- This is also called as BIBO (bounded input bounded output)
+- and this translated to the necessary and sufficient condition that the l1-norm of the filter is finite.
+- As a consequence, the frequency response of a stable filter is always continuous
+  - in fact, assume for instance that we have an input $x$ corrupted by some quantization noise $e$, due to rounding errors
+  - then, by applying the filter $h$ to $x_q$, we get the output $y_q = y + h \ast e$,
+  - if the filter is stable, then the residual part is bounded.
+:::
+
 :::
 
 ## Ideal filters {.small-slide}
 
+<!-- ### Ideal filter
+- selects the band-pass of the inputs
+- rejects all other frequencies (in the stop-band) -->
+
+::: {.notes}
+- An ideal filter selects a given frequency range called band-pass of the input
+- and rejects all other frequencies, which form the stop-band
+:::
 
 ::: {.fragment}
 ### Low pass filter (periodic spectrum)
 
 - Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } |\nu| < \nu_c \\ 0 &\mbox{if } |\nu| > \nu_c \end{cases}$
 - Impulse response: $h(n) = 2 \nu_c \sinc(2\pi \nu_c n)$
+
+::: {.notes}
+- the pass-band of a ideal low-pass filter constains all frequencies lower than a given threshold, called **cut-off frequency**
+- By applying the inverse DTFT to the filter, we obtain the impulse response of the filter, which is availabe in closed form, that is, a scaled sinus cardinal
+:::
 :::
 
 ::: {.fragment}
 ### Exercise: band-pass filter
 
-- Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } ||\nu|-|\nu_0|| < \nu_c \\ 0 &\mbox{if } ||\nu|-|\nu_0|| > \nu_c \end{cases}$
+- Frequency response: $H(e^{2i\pi \nu}) = \begin{cases} 1 &\mbox{if } ||\nu|-\nu_0| < \nu_c \\ 0 &\mbox{if } ||\nu|-\nu_0| > \nu_c \end{cases}$
 - Impulse response: $h(n)=4 \nu_c \sinc(2 \pi \nu_c n) \cos(2 \pi \nu_0 n)$
+
+::: {.notes}
+- The ideal band-pass filteris is then characterized by two parameters, a **central frequency** $\nu_0$ and a **bandwidth** of $2\nu_c$. 
+- A band-pass can be built by the differences of 2 low-pass filters and its impulse response can be easily computed in closed-form resulting in a modulated sinus cardinal
+:::
+
 :::
 
 <br>
@@ -169,113 +242,366 @@ Beyond linearity and invariance to translation over time, we usually expect a fi
 ::: {.center}
 [Causality? Stability?]{.alert}
 :::
+
+::: {.notes}
+- For the low-pass filter, we know that the sinus cardianl is not causal and not stable (l1-norm is infinity)
+  - we do not need to calculate it, just checking the frequency response:
+    - it is even and real: then it cannot be causal
+    - it is discontinuous: then it cannot be stable
+- For the band-pass filter, it is neither causal nor stable, as the same reasons apply
+:::
 :::
 
-## Transient and steady states {.small-slide}
+## Transient and steady states {.tiny-slide}
 
-### Example:
+::: {.notes}
+- When a causal filter is applied to a causal input signal, we can define two regimes: 
+- a transient state and a steady state
+:::
+
+
+::: {.fragment}
+For example
+
 - $x(n)$ is a unit step signal: $x(n) = \vbone_{[0,+\infty[}(n)$
 - $h(n)$ is an averaging filter: $h(n) = \frac1N \vbone_{[0,N-1[}(n)$
 
-We observe:
+::: {.notes}
+- Let s assume that the input signal is the unit step signal
+- and we consider the causal averaging filter of length $N$ sample
+- From before, we know that that the output signal is causal, because both h and x are.
+  - we would expect that averaging a constant signal like the step unit would produce $y(n)=1$ for positive samples.
+:::
+:::
 
-- From $n=0$ to $N-2$: transient state $\to$ ramp
-- From $n=N-1$ to $+\infty$: steady state $\to$ constant signal
+. . . 
 
-## Phase and group delays {.small-slide}
+We observe
+
+- From $n=0$ to $N-2$: transient state $\quad\to$ ramp
+- From $n=N-1$ to $+\infty$: steady state $\quad\to$ constant signal
+
+
+::: {.notes}
+- Actually this happens only after $N-1$ taps, that is the lenght of the filter.
+- The interval between 0 and N-2 looks like a ramp and goes from 0 to 1.
+- This transition is called the **transient state** of the filter, which is followed by the **steady state** of the filter, where the output converge to the expected state
+:::
+
+![Transient and steady states of a causal filter](../notebooks/images/cm01_transient_steady_state.svg){fig-align="center" width=80%}
+
+## Phase and group delays {.tiny-slide}
 
 Frequency response: $H(\eipiv)=H_R(\nu) e^{i \phi(\nu)}$
 
-Phase and group delays
+::: {.notes}
+- Let s consider the polar factorization of the frequency response of the filter $H(\eipiv)$ into real amplitude $H_R$ and phase $\phi(\nu)$.  
+:::
+
+. . . 
+
+Phase and group delays:
+<!-- [More about [Group and Phase delays](https://www.merlijnvanveen.nl/en/study-hall/165-group-delay-101)] -->
 
 $$
 \begin{cases}
-  \tau_p(\nu_0) &= - \frac{1}{2\pi} \frac{\phi(\nu_0)}{\nu_0}\\
-  \tau_g(\nu_0) &= - \frac{1}{2\pi} \frac{d \phi}{\nu}{\nu_0}
+  \taup(\nu_0) &= - \frac{1}{2\pi} \frac{\phi(\nu_0)}{\nu_0}\\
+  \taug(\nu_0) &= - \frac{1}{2\pi} \frac{d \phi}{d \nu}{\nu_0}
 \end{cases}
 $$
 
-Frequency response in the neighborhood of $\nu_0$
+::: {.notes}
+- We will here define two quantities that measure the delays (in unit of time) that different frequencies components expericey as they pass through a filter.
+- This delays may be frequency dependent, so that the output signal may experience distortions 
+- the phase delay is the time delay experienced by an individual sinuoidal frequency component
+- the group delay is the time delay experienced by the overall envolop or "group" of frequencies
+:::
+
+. . .
+
+Frequency response in the neighborhood of $\nu_0$ (proof in the notes):
 
 $$
-  H(\eipiv) \simeq H_R(\nu_0) e^{- i 2 \pi (\nu_0 \tau_p(\nu_0) + (\nu - \nu_0) \tau_g(\nu_0))}
+  H(\eipiv) \simeq H_R(\nu_0) e^{- i 2 \pi (\nu_0 \taup(\nu_0) + (\nu - \nu_0) \taug(\nu_0))}
 $$
 
-Filtering of a *narrowband* signal ($y = h \ast x)$
+::: {.notes}
+- In order to explain these definition, let us study the filter response in the neighborhood of the frequency $\nu_0$
+- Then, the filter response can be approximated using the two quantities.
+- And it is easy to see by developing the Taylor expansion (let s do it)
+:::
+
+. . .
+
+
+Filtering of a *narrowband* signal $x$ ($y = h \ast x)$ (proof in the notes):
 $$
-  x(n) = a(n) e^{i 2 \pi \nu_0 n} \implies y(n) \simeq H_R(\nu_0) a(n - \tau_g(\nu)) e^{i 2 \pi \nu_0(n - \tau_p(\nu_0))}
+  \underbrace{x(n) = a(n) e^{i 2 \pi \nu_0 n}}_{X(\eipiv)= A\left(e^{2 i \pi (\nu - \nu_0)}\right)} \quad\implies\quad y(n) \simeq H_R(\nu_0) a(n - \taug(\nu)) e^{i 2 \pi \nu_0(n - \taup(\nu_0))}
 $$
+
+::: {.notes}
+- Let us now consider the output signal $y$ resulting from the convolution of $h$ with a narrow-band signal $x$.
+- Remeber that a narrowband signal is a signal $x(n)$ 
+  - that results from the multiplication of temporal envelop modulated by a carrier frequency 
+  - and the amplitude is assumed to be limited to the neighthood of the zero frequency
+- Let us develop the math for this ...
+- This proves that the output is also a narrowband signal, of same carrier frequency $\nu_0$ as $x(n)$,
+  - with temporal envolop which is shifted by the group delay $\taug$ w.r.t. to $x$
+  - and initial phase shifet by the phase delay $\taup$ w.r.t. $x(n)$
+:::
+
+. . .
 
 Linear phase filters (= the delay is constant)
 
+::: {.notes}
+- As final remarks, notice that the temporal wavefrom of the input $x$ is not distorted by the filter, if and only if the group and phase delays are equal.
+- This necessary and sufficient condition for this is that $h$ is a **linear phase filter**
+
+:::
+
+## Phase and group delay visualization {.tiny-slide}
+
+- https://brianmcfee.net/dstbook-site/content/ch10-convtheorem/Phase.html
+
+Amplitude is ok, but phase is always a bit hard to grasp
+
+TODO
+
 # Part II - Z-transform {.section-slide}
 
-##  Z-transform {.small-slide}
+##  Z-transform {.tiny-slide}
 
 Definition: $H(z) = \sum_{n = -\infty}^{+\infty} h(n) z^{-n}$, called the **Transfer function**
 
-Domain of convergence: $\calD = \{ z \in \CC \mbox{ s.t. } \sum_{n=-\infty}^{+\infty} |h(n)| |z|^{-n} < + \infty \}$
+- From the DTFT $H(\eipiv) = \sum_{n=-\infty}^{\infty} h(n) e^{- 2 i \pi \nu n}$, we use $z = e^{i\pi \nu} \in \CC$
 
-Causal case: $R = \inf \{ |z|, z \in \CC / \sum h(n)z^{-n} < + \infty \}$
+::: {.notes}
+- The Z-transform is a very powerfool tool to characterize the properties of discrete filters
+- The Z-transform can be derived from the definition of the DTFT, by introducting the complex number $z$.
+- Why can't we just use the DTF?
+  - The DFT assume an integer number of samples, defined over a cicle, a period
+  - We can have filters that have infinite impulse responses, for which we cannot define a finite number of sample
+  - so the Z-transform is like the DFT, but under the assumption of silence after N sampels, rather than infinite repetition
+:::
+
+. . .
+
+Domain of convergence: $\calD = \{ z \in \CC / \sum_{n=-\infty}^{+\infty} |h(n)| |z|^{-n} < + \infty \}$ with shapes:
+
+::: {.notes}
+- The domain of convergence for the Z-trasform is related to the characteristics of the filters
+- In the general cases, it looks like a ring, that is the intersection of two disks
+:::
 
 ::: {.columns}
 
 ::: {.column}
 
-- FIR filters: $\calD = \CC \ 0$ or $\infty$
-- Anti-causality: $\calD$ is a disk
-- **Causality:** $\calD$ is the complement of a disk
-- General case:** $\calD$ is a ring (or $\emptyset$)
+- in the general case:** $\calD$ is a ring (or $\emptyset$)
 
+::: {.incremental}
+- if FIR filters: $\calD = \CC \setminus 0$
+- if anti-causality: $\calD$ is a disk
+- if **causality:** $\calD$ is the complement of a disk
+
+::: {.notes}
+- Then if the filter are FIR, the domain span the entire complex plane, without the origin
+- if the filter is anti-causal, the domain is shaped like a disk
+- and finally if causal, it the complement of the disk.
+:::
 ::: 
 
+:::
+
 ::: {.column}
-![Z-transform](https://www.oreilly.com/api/v2/epubs/urn:orm:book:9781118393956/files/OEBPS/images/nbapp03f003.jpg)
-:::
+
+![Z-transform](https://www.oreilly.com/api/v2/epubs/urn:orm:book:9781118393956/files/OEBPS/images/nbapp03f003.jpg){width=70%}
+
 :::
 
-## Basic properties
+:::
 
-- **Stability:** the ring $\calD$ contains the unit circle
+
+## Basic properties {.small-slide}
+
+**Stability:** the ring $\calD$ contains the unit circle
+  
   - The ZT matches the DTFT on the unit circle
-- Linearity: $a_1 h_1 + a_2 h_2 \to a_1 H_1 + a_2 H_2$ with ($\calD \supset \calD_1 \supset \calD_2$)
-- Delay: $y(n) = x(n-k) \iff Y(n)=z^{-k} X(z)$
-- Convolution product
+
+::: {.notes}
+- We can easily prove that $h$ is stable if and only if the ring $\calD$ contains the unit circle.
+- It can be derived by applying the definition $\sum_{n\in\ZZ} | h(n) | < + \infty$ that implies $z=1$
+:::
+
+. . .
+
+Linearity: $a_1 h_1 + a_2 h_2 \to a_1 H_1 + a_2 H_2$ with ($\calD \supset \calD_1 \supset \calD_2$)
+
+
+::: {.notes}
+- Then, we have a set properties that are similar to the one of the DTFT
+- we have the linearity of the tranformation
+:::
+
+
+. . .
+
+Delay: $y(n) = x(n-k) \iff Y(n)=z^{-k} X(z)$
+
+
+::: {.notes}
+
+- Applying a delay is equal to multiply by $z^{-k}$
+
+:::
+
+
+. . .
+
+Convolution product:
+
   - if $y = h\ast x$, then $Y(z)=H(z)X(z)$, $\calD_y \supset \calD_h \cap \calD_x$
-- Insertion of zeros: $Y(z) = X(z^L) \iff y(nL) = x(n)$, $y=0$ elsewere
-- Inverse filter
+
+
+::: {.notes}
+
+We can compute the convolution products, translates into a product in the transformed domain
+
+:::
+
+. . .
+
+Insertion of zeros: $Y(z) = X(z^L) \iff y(nL) = x(n)$, $y=0$ elsewere
+
+
+::: {.notes}
+Then, adding zeros between consecutives samples, doesn't change the signal content: the specturm is squeeze and repeated.
+:::
+
+. . .
+
+Inverse filter
+
   - if $h \ast h_i = \delta$, then $H(z)H_i(z) = 1$ for $z \in \calD_h \cap \calD_{h_i}$
 
-## Example of ZT
+
+::: {.notes}
+
+Finally, as consequence of the convolution product, the inverse filter, is the one that results in the identity when the two transform are multiplied.
+
+:::
+
+
+## Example of ZT {.small-slide}
+
+
+::: {.notes}
+
+Here are a few example of useful Z-transforms.
+
+We have:
+
+- the identity filters
+- the step filter
+- the rectangular filter, that is, the ideal low-pass filter
+
+:::
 
 - $h(n) = \delta(n)$ $\implies$ $H(z) = 1$, $\quad\forall z \in \CC$
 - $h(n) = 1_{[0,+\infty[}(n)$ $\implies$ $H(z) = \frac{1}{1 - z^{-1}}$, $\quad\forall |z| > 1$
 - $h(n) = 1_{[0,\ldots,N-1[}(n) \implies H(z) = \frac{1 - z^{-N}}{1 - z^{-1}}$, $\quad\forall |z| \neq 0$
-- AR1 filter:
-  - $h(n) = \begin{cases}a^n &\text{if } n\geq 0 \\ 0 &\text{if } n < 0\end{cases} \implies H(z) \frac{1}{1 - a z^{-1}}$ with $\calD = \{ z \in \CC / |z| > |a|\}$
-  - $h(n) = \begin{cases}-a^n &\text{if } n< 0 \\ 0 &\text{if } n \geq 0\end{cases} \implies H(z) \frac{1}{1 - a z^{-1}}$  with $\calD = \{ z \in \CC / |z| < |a|\}$
 
-## Autoregressive filter of order 1 {.center}
+. . .
+
+
+AR1 filter:
+
+  - $h(n) = \begin{cases}a^n &\text{if } n\geq 0 \\ 0 &\text{if } n < 0\end{cases} \implies H(z)= \frac{1}{1 - a z^{-1}}$ with $\calD = \{ z \in \CC / |z| > |a|\}$
+  
+
+::: {.notes}
+The autoregression filter of order 1 (also know as AR1 filter) is importat filter that we will later define a **recursive filter**
+
+- Let be $h(n)$ defined as $a^n$ for positive samples and zeros otherwise
+- The impulse response is causal, so we already know that the domain of convergence is the complement of a disk, which can be proove to be of radius $a$
+- Note that, the filter is stable $\iff$ the domain contains the unit cirle, that is, $|a| < 1$. 
+- Which makes sense, as for $|a| < 1$ the series converge
+
+:::
+
+. . . 
+
+- $h(n) = \begin{cases}-a^n &\text{if } n< 0 \\ 0 &\text{if } n \geq 0\end{cases} \implies H(z)= \frac{1}{1 - a z^{-1}}$  with $\calD = \{ z \in \CC / |z| < |a|\}$
+  
+
+::: {.notes}
+
+Then we have the **anti-causal** version, defined similarly, but with a negative coefficiens and for negative samples
+
+- we can notice that the form of the Z-tranform is the same
+- but the domain of converges is different, which is now the interior of the disk with radious $a$
+:::
+
+## Autoregressive filter of order 1 {.center .small-slide}
 
 ::: {.callout}
 ## Autoregression filter of order 1
 
-- input/output relationship : $y(n) - a y(n-1) = x(n)$
 - Transfer function: $H(z) = \frac{1}{1 - a z^{-1}}$
+- Input/output relationship : $y(n) - a y(n-1) = x(n)$
 
 :::
 
-|                             |                               |                                   |
+
+::: {.notes}
+
+- Since the causal and anti-causal AR1 filter have the same transfer function, 
+- then we have two **implementations** of the same filter
+- which in the time domain can be written in a recursive way as here
+- in an equation that is called **input/output relationship**
+:::
+
+. . .
+
+|                             |       Forward recursion       |   Backward recursion              |
 |-----------------------------|:-----------------------------:|:---------------------------------:|
 | Implementation              | $y(n)=a y(n-1) + x(n)$        | $y(n)= \frac{y(n+1) + x(n+1)}{a}$ |
-| IR ($x(n)=\delta_0(n)$)     | $h(n) = a^n 1_{\{n\geq 0\}}$  | $h(n) = a^n 1_{\{n\geq 0\}}$      |
+| IR ($x(n)=\delta_0(n)$)     | $h(n) = a^n \vbone_{\{n\geq 0\}}$  | $h(n) = a^n \vbone_{\{n\geq 0\}}$      |
 | Domain                      | $\{ z \in \CC / |z| < |a| \}$ | $\{ z \in \CC / |z| < |a| \}$     |
 | Properties                  | causal , stable if $|a| < 1$  | anti-causal, stable if $|a| > 1$  |
 
 
+::: {.notes}
+
+The forward recursion is defined for increasing times
+
+- this is the causal implementation
+- and it is numarecally stable if and only if $|a|<1$
+- that is, any error in the computation of $y(n-1)$ is reduced by a factor $|a|$ in the computation of $y(n)$
+
+The backward recursion, or anticausal implementation, defined instead for decreasing times
+
+- it is numerically stable if and only if $|a|>1$,
+- since any error in the computation of $y(n+1)$ is reduced by a factor 1 over $|a|$ in $y(n)$
+
+:::
+
+. . .
+
+
+::: {.notes}
+
+In this simple case, looking at $a$ is sufficient to know which implementation.
+
+But this will be now generalized to the general context of **recursive filters**
+
+:::
+
+
 # Parte III - Recursive filters {.section-slide}
 
-## Recursive filters
+## Recursive filters {.small-slide}
 
 Input-output relationship
 
@@ -283,10 +609,38 @@ $$
 \sum_{k=0}^N a_k y(n-k) = \sum_{k=0}^M b_k x(n - k)
 $$
 
+
+::: {.notes}
+
+Recursive filters generalize the notion of AR1 filter of the previous slides
+
+The I/0 relationship relates the samples of both the output signal $y$ and the input signal $x$
+:::
+
+. . .
+
 Computation of the output (causal implementation)
 $$
 y(n) = \frac{1}{a_0} \left[  \sum_{k=0}^{M} b_k x(n - k) - \sum_{k=1}^N a_k y(n - k) \right]
 $$
+
+
+::: {.notes}
+
+Note that this relation defines a filter 
+
+- where the output sampes are linear function of the input samples
+- delaying the input signal is equivalent to delaying the output signal by the same delay
+
+Therefore we can define an impulse response whose impulse response looks like this.
+
+The I/0 relationship admits several implementation
+
+- this one is the causal one
+
+:::
+
+. . .
 
 Transfer function
 
@@ -297,15 +651,24 @@ $$
 $$
 
 
-## Example of recursive filters
+::: {.notes}
 
-Auto-regression filters (if $M=0$, AR of order $N$)
+Contrary to the impulse response, the transfer function can be always expressed as a simple function of the coefficients $a_k$ and $b_k$ as shown here
+
+- where $c_k$ are known as the **zeros** and the $d_k$ are known as the **poles** of the filter.
+
+:::
+
+
+## Example of recursive filters {.small-slide}
+
+### Auto-regression filters (if $M=0$, AR of order $N$)
 
 $$
   y(n) = \frac{b_0}{a_0} x(n) - \sum_{k=1}^N \frac{a_k}{a_0} y(n - k)
 $$
 
-Finite Impulse Response (FIR) filters
+### Finite Impulse Response (FIR) filters
 
 - If $N=0$, FIR filter of length $M$
   $$
@@ -315,37 +678,80 @@ Finite Impulse Response (FIR) filters
 - If the IR is symmentric or anti-symmetric, the phase is linear
 
 
-## Recursive filters
+::: {.notes}
 
-::: {.callout}
+There are two particular classes of recursive filters which are widely used in signal processing 
+
+- the AR filters
+- and the Finite Impulse Response (FIR) filters
+
+The AR filters, are recursive with no zeros 
+
+- The I/0 relationship simplifies to this formulation
+- This filters are widely used in speech processing, because they can model the physical model of the vocal track
+
+The FIR filters are recursive filters with no pole
+
+- their impulse response can be simply written as this
+- they are widely used in signal processing, because they are stable and causal by construction
+- in addition, if the IR is symmetric (or anti-symmetric), their phase is linear (which will be proved in the next lecture)
+:::
+
+## Recursive filters {.small-slide}
+
 ### Transfer function of a recursive filter
 $$
   H(z) 
     = \frac{\sum_{k=0}^M b_k z^{-k}}{\sum_{k=0}^N a_k z^{-k}}
     = \frac{b_0}{a_0} \frac{\prod_{k=1}^M  (1 - c_k z^{-1})}{ \prod_{k=1}^N (1 - d_k z^{-1})}
 $$
-:::
 
-- Defition of poles and zeros
-- Domain of convergence: $\calD$ is a ring bounded by 2 poles, with no pole inside
+Domain of convergence: $\calD$ is a ring bounded by 2 poles, with no pole inside of it
+
 - **Stable** filter $\to$ $\calD$ is the largest ring containing the unit circle and no pole
 - **Stable and causal** filters $\to$ whose poles are all strictly inside the unit circle
-- if the $a_k$ and $b_k$ are real, the poles and zeros are either real, or they form conjugate pairs
+- if the $a_k$ and $b_k$ are real, the poles and zeros are either real, or form conjugate pairs
 
 
-## Computation of the IR from the ZT
+::: {.notes}
+
+The transfer function of a recursive filter tells us some properties of of the domain of convengence of the filter
+
+- the domain $\calD$ is a ring, bounded by two poles, with no pole inside
+- there is an **unique stable** implementation if and only if there is no pole on the unit circle
+- there is a **unique stable and causal** implementation if and only if all polse are strictly inside the unit circle
+- if all the coefficients $a_k$ and $b_k$ are real, the poles and zeros are either real, or form conjgate pairs
+
+:::
+
+
+## Computation of the IR from the ZT {.tiny-slide}
 
 1. If necessary, extract from $H(z)$ a term in $z^n$, so that the numerator and denominator of $H(z)$ only contain negative powers of z plus a constant
+
+. . . 
+
 2. Factorize the numerator and denominator as product of monomials of $z^{-1}$
+
+. . .
+
 3. Partial fraction decomposition of $H(z)$ as a function of $z^{-1}$
+
+. . .
+
 4. Expansion in power series
   - of $z^{-1}$ if we compute the causal IR, of if we compute the stable IR and if the pole is inside the unit circle
   - of $z$ if we compute the anti-causal IR, or if we compute the stabel and if the pole is outside of the unit circle 
-5. Indetidy the resulting expression with $H(z) = \sum_{n\in \ZZ} h(n)z^{-n}$
+
+. . .
+
+5. Identidy the resulting expression with $H(z) = \sum_{n\in \ZZ} h(n)z^{-n}$
+
+## Example {.small-slide}
 
 Example: $H(z) = \frac{1}{1 - \frac52 z^{-1}  + z^{-2}}$
 
-## Geometric interpretation of the FR
+## Geometric interpretation of the FR {.small-slide}
 
 Example (AR2 filter):
 $$
@@ -361,7 +767,7 @@ $$
 \arg H(z) = 2 \arg(OM) - \arg(PM) - \arg(QM)
 $$
 
-## Spectral factorization
+## Spectral factorization {.small-slide}
 
 Factorization of the transfer function
 
@@ -380,7 +786,7 @@ $$
 - Poles of $| | < 1$: stability + causality
 - Zeros of $| | < 1$: minimal phase 
 
-## All-pass filters
+## All-pass filters {.small-slide}
 
 Definition: $H(z) = \prod_{k=1}^N \frac{z^{-1} - c_k^\ast}{1 - c_k z^{-1}$ where $| c_k | < 1$ $\forall k$
 
@@ -392,11 +798,11 @@ Properties (if $y = h \ast x$):
 - An all-pass filter is such that $\sum_{n=-\infty}^{N} |x(n)|^2 \geq \sum_{n=-\infty}^{N} |y(n)|^2$  
   Proof hint: $x_N(n) = x(n) \times  1_{]-\infty, N]}(n)$
 
-## Spectral factorization
+## Spectral factorization {.small-slide}
 
 ![](image)
 
-## Minimal phase filters
+## Minimal phase filters {.small-slide}
 
 - Definition: filter whose poles and zeros are all inside the unit circle
 - Any causal and stable recursive filter is the product of all-pass filter and a minimal phase filter
@@ -405,7 +811,7 @@ Properties (if $y = h \ast x$):
   - $\sum_{n = -\infty}^{+\infty} | y(n) |^2 \geq \sum_{n=-\infty}^N |y(n)|^2$
   - $g_m$ has the lowest group delay
 
-## Miminal phase filters
+## Minimal phase filters {.small-slide}
 
 ![](image)
 

@@ -1,0 +1,8 @@
+{
+  "Insert speaker notes block": {
+    "scope": "quarto,markdown",
+    "prefix": "notes",
+    "body": ["", "::: {.notes}", "", "${TM_SELECTED_TEXT}$0", "", ":::", ""],
+    "description": "Insert speaker notes block"
+  }
+}

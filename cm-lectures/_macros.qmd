@@ -14,4 +14,7 @@
 \newcommand{\sumkN}{\sum_{k=0}^N}
 
 \newcommand{\vbone}{\mathbf{1}}
+
+\newcommand{\taup}{{\textcolor{blue}{\tau_p}}}
+\newcommand{\taug}{{\textcolor{red}{\tau_g}}}
 :::
