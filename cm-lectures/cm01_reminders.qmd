@@ -1,6 +1,6 @@
 ---
 title: "Reminders"
-subtitle: "4AI01 - Signal Representation"
+subtitle: "4AI01 - Representation of signal"
 author: 
   - name: "Diego DI CARLO"
     affiliation: ADASP / S2A, IDS, LTCI
@@ -1183,6 +1183,16 @@ $$
 - Stability, causality
 - Linear phase filter if symmetric window
 
+::: {.notes}
+
+The window method is used to guarantee the stability and the causality of a given filter
+
+and if the window is symmetric, we are gauranteed with a linear phase filter
+
+:::
+
+. . .
+
 ### Drawbacks
 
 - the transition bands are widened
@@ -1198,6 +1208,20 @@ In practice, it is difficult to respect a given desired shape of the window and 
 Kaiser looked into this problem in the 70s and defined a familis of windows, called Kaiser windows parameterized by a single coefficient $\beta$
 
 ::: -->
+
+
+::: {.notes}
+
+On the other side...
+
+- we the transition bands are widened
+- and spurius ripples due to sidelobes appears 
+  - characterized by non constant amplitude both in the pass and stop bands
+  - leading to artifact in the resulting filter
+
+
+:::
+
 
 
 ## The end {.unlisted .center}

@@ -24,6 +24,66 @@ contributes:
               }
             })();
             </script>
+        - text: |
+            <script>
+            (function() {
+              // The reveal.js "notes" plugin copies each slide's raw
+              // aside.notes HTML into a separate popup window. By the time
+              // that HTML is copied, MathJax has already turned the equations
+              // into <mjx-container> markup, but the CSS rules that lay out
+              // that markup (fractions, sums, sub/superscripts, ...) live in
+              // a <style id="MJX-..."> tag in THIS document's <head> and are
+              // never sent to the popup, so notes math renders garbled there.
+              // Mirroring those style tags into the popup fixes it.
+              function mjxStyleTags() {
+                return document.querySelectorAll('head style[id^="MJX-"]');
+              }
+
+              function mirrorMjxStyles(popupDoc) {
+                mjxStyleTags().forEach(function(src) {
+                  var dest = popupDoc.getElementById(src.id);
+                  if (!dest) {
+                    dest = popupDoc.createElement("style");
+                    dest.id = src.id;
+                    popupDoc.head.appendChild(dest);
+                  }
+                  if (dest.textContent !== src.textContent) {
+                    dest.textContent = src.textContent;
+                  }
+                });
+              }
+
+              function watchNotesPopup(popup) {
+                var tries = 0;
+                (function trySync() {
+                  if (popup.closed) return;
+                  if (popup.document && popup.document.head &&
+                      popup.document.querySelector(".speaker-controls-notes .value")) {
+                    mirrorMjxStyles(popup.document);
+                  } else if (tries++ < 100) {
+                    setTimeout(trySync, 50);
+                  }
+                })();
+
+                // Keep mirroring in case MathJax appends more CHTML rules
+                // later (e.g. characters first used on a not-yet-visited slide).
+                var observer = new MutationObserver(function() {
+                  if (popup.closed) { observer.disconnect(); return; }
+                  if (popup.document && popup.document.head) mirrorMjxStyles(popup.document);
+                });
+                observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+              }
+
+              var nativeOpen = window.open;
+              window.open = function(url, name, specs) {
+                var popup = nativeOpen.call(window, url, name, specs);
+                if (name === "reveal.js - Notes" && popup) {
+                  watchNotesPopup(popup);
+                }
+                return popup;
+              };
+            })();
+            </script>
       slide-number: true
       code-copy: false
       margin: 0.10
