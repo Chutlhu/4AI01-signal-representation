@@ -1,3 +1,8 @@
 .reveal .footer {
   font-size: 28px; /* Change to your preferred size */
 }
+
+.reveal .slides section.blurred {
+  filter: blur(8px);
+  transition: filter 0.3s ease;
+}

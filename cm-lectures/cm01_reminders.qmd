@@ -884,7 +884,7 @@ When M is close to P, the distance PM is small, then the magnitude of $H(z)$ is 
 
 :::
 
-## Spectral factorization {.small-slide}
+## Spectral factorization {.small-slide .blurred}
 
 Factorization of the transfer function
 
@@ -903,7 +903,7 @@ $$
 - Poles of $|z| < 1$: stability + causality
 - Zeros of $|z| < 1$: minimal phase 
 
-## All-pass filters {.small-slide}
+## All-pass filters {.small-slide .blurred}
 
 Definition: $H(z) = \prod_{k=1}^N \frac{z^{-1} - c_k^\ast}{1 - c_k z^{-1}}$ where $| c_k | < 1$ $\forall k$
 
@@ -915,11 +915,11 @@ Properties (if $y = h \ast x$):
 - An all-pass filter is such that $\sum_{n=-\infty}^{N} |x(n)|^2 \geq \sum_{n=-\infty}^{N} |y(n)|^2$  
   Proof hint: $x_N(n) = x(n) \times  1_{]-\infty, N]}(n)$
 
-## Spectral factorization {.small-slide}
+## Spectral factorization {.small-slide .blurred}
 
 ![](images/fig9.svg)
 
-## Minimal phase filters {.small-slide}
+## Minimal phase filters {.small-slide .blurred}
 
 - Definition: filter whose poles and zeros are all inside the unit circle
 - Any causal and stable recursive filter is the product of all-pass filter and a minimal phase filter
@@ -928,7 +928,7 @@ Properties (if $y = h \ast x$):
   - $\sum_{n = -\infty}^{+\infty} | y(n) |^2 \geq \sum_{n=-\infty}^N |y(n)|^2$
   - $g_m$ has the lowest group delay
 
-## Minimal phase filters {.small-slide}
+## Minimal phase filters {.small-slide .blurred}
 
 ![](images/fig10.svg)
 
@@ -937,7 +937,7 @@ Properties (if $y = h \ast x$):
 
 ## Window methods {.tiny-slide}
 
-**Example:** Ideal low-pass filter $h(n)= 2 \nu_c \sinc(2 \nu_c n)$
+**Example:** FIR of the ideal low-pass filter $h(n)= 2 \nu_c \sinc(2 \nu_c n)$
 
 - The respense is IIR, non-causal, non-stable
 
@@ -949,18 +949,18 @@ Properties (if $y = h \ast x$):
 
 :::
 
-
+  
 ::: {.notes}
 
-Let us consider an ideal frequency response, such that one of a ideal low pass filter
+Let us consider an ideal low pass filter
 
 which has a flat response between to cut off frequencies $\pm \nu_c$
 
-The impulse response is known in closed form, and we know that it is infitine, non-causal and non-stable
+The impulse response is known in closed form, and we know that it is infinite, non-causal and non-stable
 
-We can built a finite impulse response by moltiplying this by a finite window, in the time domain
+We can built a **finite** impulse response by multiplying this by a window with finite temporal support, in the time domain
 
-- that is apply a trucation
+We then obtain an FIR filter, that we can make causal applying a temporal shift
 
 :::
 
@@ -982,18 +982,60 @@ Synthesis of a Type I causal FIR filter
 
 ::: {.notes}
 
-HERE
+The spectar result is a convolution of the Fourier transform of the ideal response and the Fourier transform of the window
 
+And in the figure we can see the impulse and frequency response of the FIR filter synthetised by the window method
 
 :::
 
 
+## Gibbs phenonemon {.small-slide}
 
-## Gibbs phenonemon
+::: {.r-stack}
 
-![Illustration of the Gibbs effect](images/fig42.svg){width=50%}
+![](images/fig42.svg){width=50% .fragment fig-align="center"}
 
-## Choice of a suitable window
+![](images/fig43.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig44.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig45.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig46.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig47.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig48.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig49.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig50.svg){width=50% .fragment fig-align="center"}
+
+![](images/fig51.svg){width=50% .fragment fig-align="center"}
+
+:::
+
+::: {.notes}
+
+We can notice two effects
+
+- **ripples** appear in the passband and in the stopband, which are related to the sidelobes of the Fourier transform of the window.
+  - this means that teh **stopband attenation** is related to the **level of this sidelobes**
+- the obtained filter is no longer infinitely selective: 
+  - a **transition band** appears between the passbass and the stopband. 
+    - the width of this transition band (that is the **filter selectivity**) are related to the **width** of the **main lobe** of the transform of the window
+:::
+
+
+## Choice of a suitable window {.small-slide}
+
+::: {.notes}
+
+The selection of the window's shappe is based on a trade-off between the level of the sideloble and the width of the main lobes.
+
+Here we can compare different windows that are used in signal processing
+
+:::
 
 $$
   h(n) = 2 \nu_c \sinc(2 \nu_c n) w(n)
@@ -1001,10 +1043,19 @@ $$
 
 where $w(n)$ is a symmetric window of a finite support
 
-![Window](images/fig53.svg){width=50%}
+![](images/fig53.svg){width=50% fig-align="center"}
 
-## Rectangular window
 
+## Notable windows {.small-slide}
+
+
+::: {.panel-tabset}
+## [Rectangular window]{.small}
+
+::: {.columns}
+
+::: {.column}
+<br>
 $$
   w(n) = \vbone_{[0,P-1]}(n)
 $$
@@ -1013,10 +1064,22 @@ $$
 - second lobe: -13 dB
 - decrease rate: -6 dB / octave
 
-![Rectangular window](images/fig16.svg)
+:::
 
-## Barlett (triangular) window
+::: {.column}
 
+![](images/fig16.svg)
+
+:::
+
+:::
+
+## [Barlett window]{.small}
+
+::: {.columns}
+
+::: {.column .small}
+<br>
 $$
   w(n) = 1 - \left| \frac{2n}{P-1} - 1 \right|
 $$
@@ -1025,10 +1088,22 @@ $$
 - second lobe: -26 dB
 - decrease rate: -12 dB / octave
 
-![Barlett window](images/fig17.svg)
+:::
 
-## Hann window
+::: {.column}
 
+![](images/fig17.svg)
+
+:::
+
+:::
+
+## [Hann window]{.small}
+
+::: {.columns}
+
+::: {.column}
+<br>
 $$
   w(n) = 0.5 - 0.5 \cos \left( 2 \pi \frac{n}{P-1} \right)
 $$
@@ -1037,10 +1112,22 @@ $$
 - second lobe: -26 dB
 - decrease rate: -12 dB / octave
 
-![Hann window](images/fig18.svg)
+:::
 
-## Hamming window
+::: {.column}
 
+![](images/fig18.svg)
+
+:::
+
+:::
+
+## [Hamming window]{.small}
+
+::: {.columns}
+
+::: {.column}
+<br>
 $$
   w(n) = 0.54 - 0.46 \cos \left( 2 \pi \frac{n}{P-1} \right)
 $$
@@ -1048,20 +1135,48 @@ $$
 - width: $\frac4P$
 - second lobe: -41 dB
 - decrease rate: -6 dB / octave
+:::
+
+::: {.column}
 
 ![Hamming window](images/fig19.svg)
 
-## Blackman window
+::: 
 
+:::
+
+## [Blackman window]{.small}
+
+::: {.columns}
+
+::: {.column}
+<br>
+
+::: {.small}
 $$
   w(n) = 0.4266 - 0.4965 \cos\left( 2 \pi \frac{n}{P-1} \right) + 0.076  \cos \left( 4 \pi \frac{n}{P-1} \right)
 $$
+:::
+
+
 
 - width: $\frac6P$
 - second lobe: -57 dB
 - decrease rate: -18 dB / octave
+:::
 
-## Window method
+::: {.column}
+
+![](images/fig20.svg)
+
+::: 
+
+:::
+
+:::
+
+## Window method {.small-slide}
+
 
 ### Advantages
 
@@ -1075,6 +1190,15 @@ $$
   - are due to side lobes
   - do not have a constant amplitude
   - are the same in passband and stopband
+
+<!-- ::: {.notes}
+
+In practice, it is difficult to respect a given desired shape of the window and minimize the order of the filter using given methods, as we cannot manually adject 
+
+Kaiser looked into this problem in the 70s and defined a familis of windows, called Kaiser windows parameterized by a single coefficient $\beta$
+
+::: -->
+
 
 ## The end {.unlisted .center}
 

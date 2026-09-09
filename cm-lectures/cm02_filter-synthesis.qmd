@@ -12,7 +12,7 @@ lightbox: auto
 
 {{< include _macros.qmd >}}
 
-## linear phase FIR filters
+## linear phase FIR filters {.small-slide}
 
 Impulse response: $h(n) \in \RR$, $n= 0, \ldots, N-1$
 
