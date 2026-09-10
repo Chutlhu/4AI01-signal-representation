@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FM acid bass — resonant low-pass</title>
+<style>
+  html,body{margin:0;padding:0;background:transparent;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+</style>
+</head>
+<body>
+
+<!-- ==== everything below can be lifted verbatim into a reveal.js slide ==== -->
+<div id="fm-app">
+<style>
+#fm-app{
+  --fm-ink:#222; --fm-muted:#5f6670; --fm-panel:#f4f5f7;
+  --fm-grid:#dfe2e6; --fm-axis:#9aa1ab;
+  --fm-navy:#1B365D; --fm-blue:#2E7CC4; --fm-orange:#E65100;
+  --fm-mono:"Fira Code",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:15px; line-height:1.4; box-sizing:border-box; width:100%; color:var(--fm-ink);
+}
+#fm-app *{box-sizing:border-box}
+#fm-app .fm-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#fm-app .fm-top{display:grid;grid-template-columns:310px minmax(0,1fr);gap:12px}
+#fm-app .fm-pnl{background:var(--fm-panel);border-radius:10px;padding:8px 12px 10px}
+#fm-app .fm-pnl svg{display:block;width:100%;height:290px}
+#fm-app .fm-pnl.fm-scope svg{height:104px}
+#fm-app svg text{font-family:var(--fm-mono);font-size:13px;fill:var(--fm-muted)}
+#fm-app .fm-hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#fm-app .fm-lbl{font-family:var(--fm-mono);font-size:13px;color:var(--fm-muted)}
+#fm-app .fm-val{font-family:var(--fm-mono);font-size:13px;color:var(--fm-ink);min-width:48px;text-align:right}
+#fm-app .fm-gl{stroke:var(--fm-grid);stroke-width:1}
+#fm-app .fm-ax{stroke:var(--fm-axis);stroke-width:1;fill:none}
+#fm-app .fm-uc{stroke:var(--fm-ink);stroke-width:1.2;fill:none}
+#fm-app .fm-dash{stroke:var(--fm-blue);stroke-width:1.2;stroke-dasharray:4 3}
+#fm-app .fm-pole{stroke:var(--fm-navy);stroke-width:2.2;stroke-linecap:round;fill:none}
+#fm-app .fm-zero{stroke:var(--fm-ink);stroke-width:1.4;fill:none}
+#fm-app .fm-mag{stroke:var(--fm-navy);stroke-width:2;stroke-linejoin:round;fill:none}
+#fm-app .fm-spec{fill:var(--fm-blue);opacity:0.18;stroke:none}
+#fm-app .fm-wav{stroke:var(--fm-navy);stroke-width:1.3;stroke-linejoin:round;fill:none}
+#fm-app .fm-ctl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 24px;margin-top:10px}
+#fm-app .fm-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+#fm-app .fm-row .fm-lbl{width:72px}
+#fm-app input[type=range]{flex:1;min-width:0;margin:0;accent-color:var(--fm-blue)}
+#fm-app .fm-seq{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin-top:12px}
+#fm-app .fm-stp{height:26px;border-radius:4px;border:1px solid var(--fm-grid);background:#fff}
+#fm-app .fm-stp.on{background:#d6e6f6;border-color:var(--fm-blue)}
+#fm-app .fm-stp.acc{background:#fde3cc;border-color:var(--fm-orange)}
+#fm-app .fm-stp.cur{outline:2px solid var(--fm-navy);outline-offset:1px}
+#fm-app .fm-bar{display:flex;align-items:center;gap:16px;margin-top:12px}
+#fm-app button{font:inherit;font-size:14px;font-weight:600;padding:5px 14px;border-radius:6px;
+  cursor:pointer;background:transparent;color:var(--fm-orange);border:1px solid var(--fm-orange)}
+#fm-app button:hover{background:#fdf0e6}
+#fm-app button.fm-mini{font-size:11px;font-weight:500;padding:2px 9px;height:22px;
+  color:var(--fm-muted);border-color:var(--fm-axis)}
+#fm-app button.fm-mini:hover{background:var(--fm-grid)}
+</style>
+
+<h2 class="fm-sr">FM acid bass synthesizer with z-plane pole-zero view, live output spectrum behind the filter magnitude curve, and an oscilloscope of the output waveform.</h2>
+
+<div class="fm-top">
+  <div class="fm-pnl">
+    <div class="fm-lbl">z-plane</div>
+    <svg viewBox="0 0 240 262" role="img">
+      <title>z-plane</title>
+      <desc>Unit circle with two conjugate poles and a double zero at z = −1.</desc>
+      <line class="fm-ax" x1="8" y1="120" x2="232" y2="120"/>
+      <line class="fm-ax" x1="120" y1="8" x2="120" y2="232"/>
+      <circle class="fm-uc" cx="120" cy="120" r="100"/>
+      <line class="fm-dash" id="fm-ray" x1="120" y1="120" x2="228" y2="120"/>
+      <path class="fm-pole" id="fm-p1" d="M0 0"/>
+      <path class="fm-pole" id="fm-p2" d="M0 0"/>
+      <circle class="fm-zero" cx="20" cy="120" r="4.5"/>
+      <circle class="fm-zero" cx="20" cy="120" r="8"/>
+      <text x="120" y="256" text-anchor="middle">× poles   ◎ double zero</text>
+    </svg>
+  </div>
+  <div class="fm-pnl">
+    <div class="fm-hd">
+      <div class="fm-lbl">|H(ν)| in dB &nbsp;·&nbsp; output spectrum behind</div>
+      <button class="fm-mini" id="fm-ax">log ν</button>
+    </div>
+    <svg viewBox="0 0 704 290" role="img">
+      <title>Magnitude response and live output spectrum</title>
+      <desc>Resonant low-pass curve drawn over the live output spectrum, with a toggle between linear and logarithmic frequency axis.</desc>
+      <g id="fm-axes"></g>
+      <polygon class="fm-spec" id="fm-spec" points=""/>
+      <line class="fm-dash" id="fm-cut" x1="0" y1="10" x2="0" y2="262"/>
+      <polyline class="fm-mag" id="fm-mag" points=""/>
+    </svg>
+  </div>
+</div>
+
+<div class="fm-ctl">
+  <div class="fm-row"><span class="fm-lbl">ratio</span><input type="range" id="fm-s_rat" min="0.5" max="8" step="0.5" value="2"><span class="fm-val" id="fm-v_rat">2.0</span></div>
+  <div class="fm-row"><span class="fm-lbl">FM index</span><input type="range" id="fm-s_idx" min="0" max="12" step="0.1" value="3"><span class="fm-val" id="fm-v_idx">3.0</span></div>
+  <div class="fm-row"><span class="fm-lbl">cutoff</span><input type="range" id="fm-s_cut" min="0.005" max="0.25" step="0.001" value="0.03"><span class="fm-val" id="fm-v_cut">0.030</span></div>
+  <div class="fm-row"><span class="fm-lbl">reso Q</span><input type="range" id="fm-s_q" min="0.7" max="18" step="0.1" value="9"><span class="fm-val" id="fm-v_q">9.0</span></div>
+  <div class="fm-row"><span class="fm-lbl">env amt</span><input type="range" id="fm-s_env" min="0" max="6" step="0.1" value="3"><span class="fm-val" id="fm-v_env">3.0</span></div>
+  <div class="fm-row"><span class="fm-lbl">decay</span><input type="range" id="fm-s_dec" min="0.06" max="0.6" step="0.01" value="0.22"><span class="fm-val" id="fm-v_dec">0.22</span></div>
+</div>
+
+<div class="fm-seq" id="fm-seq"></div>
+
+<div class="fm-bar">
+  <button id="fm-play">▶&nbsp; Trigger</button>
+  <span class="fm-lbl" id="fm-pole"></span>
+</div>
+
+<div class="fm-pnl fm-scope" style="margin-top:12px">
+  <div class="fm-lbl" style="margin-bottom:2px">output waveform</div>
+  <svg viewBox="0 0 656 96" role="img">
+    <title>Oscilloscope</title>
+    <desc>Time-domain view of the filtered output.</desc>
+    <line class="fm-gl" x1="0" y1="48" x2="656" y2="48"/>
+    <polyline class="fm-wav" id="fm-wav" points="0,48 656,48"/>
+  </svg>
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var P=[[0,1],[null,0],[12,0],[0,0],[3,1],[null,0],[0,0],[10,0],[7,1],[null,0],[0,0],[3,0],[12,0],[null,0],[0,1],[-2,0]];
+var NS='http://www.w3.org/2000/svg';
+var S=function(id){return document.getElementById('fm-'+id);};
+
+/* ---------- geometry (viewBox units) ---------- */
+var CX=120,CY=120,R=100;                                   /* z-plane          */
+var X0=50,X1=692,Y0=10,Y1=262,DBT=30,DBB=-80,NPT=1284;     /* magnitude plot   */
+var NU0=0.0005,LR=Math.log(0.5/NU0);                        /* log-axis floor   */
+var LOGTICKS=[0.001,0.003,0.01,0.03,0.1,0.3,0.5];
+var log=true;
+function fxLin(nu){ return X0+(X1-X0)*nu/0.5; }
+function fxLog(nu){ return X0+(X1-X0)*Math.log(Math.max(nu,NU0)/NU0)/LR; }
+function fx(nu){ return log?fxLog(nu):fxLin(nu); }
+function nuOfX(x){ return log?NU0*Math.exp((x-X0)/(X1-X0)*LR):0.5*(x-X0)/(X1-X0); }
+function fy(db){ return Y0+(Y1-Y0)*(DBT-Math.max(DBB,Math.min(DBT,db)))/(DBT-DBB); }
+function el(tag,attrs,parent,text){
+  var e=document.createElementNS(NS,tag),k;
+  for(k in attrs) e.setAttribute(k,attrs[k]);
+  if(text!=null) e.textContent=text;
+  parent.appendChild(e); return e;
+}
+function fmtNu(nu){ return nu>=0.1?nu.toFixed(1):nu>=0.01?nu.toFixed(2):nu.toFixed(3); }
+function axes(){
+  var g=S('axes'),db,i,ticks;
+  g.textContent='';
+  ticks=log?LOGTICKS:[0,0.1,0.2,0.3,0.4,0.5];
+  for(i=0;i<ticks.length;i++){
+    el('line',{x1:fx(ticks[i]),y1:Y0,x2:fx(ticks[i]),y2:Y1,'class':'fm-gl'},g);
+    el('text',{x:fx(ticks[i]),y:Y1+20,'text-anchor':'middle'},g,ticks[i]?fmtNu(ticks[i]):'0');
+  }
+  for(db=20;db>DBB;db-=20){
+    el('line',{x1:X0,y1:fy(db),x2:X1,y2:fy(db),'class':db===0?'fm-ax':'fm-gl'},g);
+  }
+  for(db=20;db>=DBB;db-=20){
+    el('text',{x:X0-8,y:fy(db)+4,'text-anchor':'end'},g,db>0?'+'+db:db<0?'−'+(-db):'0 dB');
+  }
+  el('rect',{x:X0,y:Y0,width:X1-X0,height:Y1-Y0,'class':'fm-ax'},g);
+}
+axes();
+S('ax').onclick=function(){
+  log=!log; S('ax').textContent=log?'log ν':'lin ν'; axes(); draw();
+};
+
+/* ---------- step sequencer display ---------- */
+var seq=S('seq');
+P.forEach(function(s,i){
+  var d=document.createElement('div');
+  d.className='fm-stp'+(s[0]===null?'':(s[1]?' acc':' on'));
+  d.id='fm-st'+i; seq.appendChild(d);
+});
+
+function par(){ return {rat:+S('s_rat').value,idx:+S('s_idx').value,cut:+S('s_cut').value,
+                        q:+S('s_q').value,env:+S('s_env').value,dec:+S('s_dec').value}; }
+
+/* ---------- RBJ biquad low-pass ---------- */
+function coef(nu,Q){
+  var w=2*Math.PI*nu,a=Math.sin(w)/(2*Q),c=Math.cos(w),a0=1+a;
+  return {b0:(1-c)/2/a0,b1:(1-c)/a0,b2:(1-c)/2/a0,a1:-2*c/a0,a2:(1-a)/a0};
+}
+function magDb(k,nu){
+  var w=2*Math.PI*nu,c1=Math.cos(w),s1=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);
+  var nr=k.b0+k.b1*c1+k.b2*c2, ni=-(k.b1*s1+k.b2*s2);
+  var dr=1+k.a1*c1+k.a2*c2,    di=-(k.a1*s1+k.a2*s2);
+  return 10*Math.log10((nr*nr+ni*ni)/(dr*dr+di*di)+1e-18);
+}
+function cross(x,y,m){
+  return 'M'+(x-m)+' '+(y-m)+'L'+(x+m)+' '+(y+m)+'M'+(x-m)+' '+(y+m)+'L'+(x+m)+' '+(y-m);
+}
+
+var curK=null;
+function draw(){
+  var p=par();
+  S('v_rat').textContent=p.rat.toFixed(1); S('v_idx').textContent=p.idx.toFixed(1);
+  S('v_cut').textContent=p.cut.toFixed(3); S('v_q').textContent=p.q.toFixed(1);
+  S('v_env').textContent=p.env.toFixed(1); S('v_dec').textContent=p.dec.toFixed(2);
+
+  var k=coef(p.cut,p.q); curK=k;
+  var rho=Math.sqrt(Math.max(k.a2,0)),
+      th=Math.acos(Math.min(1,Math.max(-1,-k.a1/(2*rho))));
+  var x=CX+R*rho*Math.cos(th), y=CY-R*rho*Math.sin(th);
+  S('p1').setAttribute('d',cross(x,y,5));
+  S('p2').setAttribute('d',cross(x,2*CY-y,5));
+  S('ray').setAttribute('x2',CX+(R+8)*Math.cos(th));
+  S('ray').setAttribute('y2',CY-(R+8)*Math.sin(th));
+
+  /* dense sampling in the *displayed* domain so narrow high-Q peaks and the
+     compressed low end of the log axis are both resolved; then refine the peak */
+  var pts=[],best=-Infinity,bi=0,i,db,lo,hi,nu;
+  for(i=0;i<=NPT;i++){
+    nu=Math.min(0.4999,nuOfX(X0+(X1-X0)*i/NPT));
+    db=magDb(k,nu); if(db>best){best=db;bi=i;}
+    pts.push((X0+(X1-X0)*i/NPT).toFixed(1)+','+fy(db).toFixed(1));
+  }
+  lo=X0+(X1-X0)*Math.max(0,bi-1)/NPT; hi=X0+(X1-X0)*Math.min(NPT,bi+1)/NPT;
+  for(i=0;i<=40;i++) best=Math.max(best,magDb(k,Math.min(0.4999,nuOfX(lo+(hi-lo)*i/40))));
+  S('mag').setAttribute('points',pts.join(' '));
+  S('cut').setAttribute('x1',fx(p.cut)); S('cut').setAttribute('x2',fx(p.cut));
+
+  S('pole').innerHTML='ρ = '+rho.toFixed(4)+' &nbsp; ν<sub>c</sub> = '+p.cut.toFixed(3)+
+                      ' &nbsp; peak +'+Math.max(0,best).toFixed(1)+' dB';
+}
+['s_rat','s_idx','s_cut','s_q','s_env','s_dec'].forEach(function(i){ S(i).addEventListener('input',draw); });
+draw();
+
+/* ---------- audio: FM voice -> Web Audio low-pass, two bars of the pattern ---------- */
+var ctx,an,fd,td,busy=false,raf=0;
+var AN_MIN=-96,AN_MAX=-10;
+function specY(db){ return Y0+(Y1-Y0)*(AN_MAX-Math.max(AN_MIN,Math.min(AN_MAX,db)))/(AN_MAX-AN_MIN); }
+function scope(){
+  var half=an.frequencyBinCount; an.getFloatFrequencyData(fd);
+  var sp=X0+','+Y1, px=-1, i,X;
+  for(i=1;i<half;i++){
+    X=fx(i/(half*2)); if(X<X0||X>X1) continue; if(X-px<1.2) continue; px=X;
+    sp+=' '+X.toFixed(1)+','+specY(fd[i]).toFixed(1);
+  }
+  S('spec').setAttribute('points',sp+' '+X1+','+Y1);
+  an.getByteTimeDomainData(td);
+  var w='';
+  for(i=0;i<td.length;i+=6) w+=(i/td.length*656).toFixed(1)+','+(48-(td[i]-128)*0.34).toFixed(1)+' ';
+  S('wav').setAttribute('points',w);
+  raf=requestAnimationFrame(scope);
+}
+S('play').onclick=function(){
+  if(busy) return; busy=true;
+  if(!ctx){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    an=ctx.createAnalyser(); an.fftSize=4096; an.smoothingTimeConstant=0.72;
+    an.minDecibels=AN_MIN; an.maxDecibels=AN_MAX;
+    fd=new Float32Array(an.frequencyBinCount); td=new Uint8Array(an.fftSize);
+    an.connect(ctx.destination);
+  }
+  ctx.resume(); if(!raf) scope();
+  var p=par(),sr=ctx.sampleRate,t0=ctx.currentTime+0.06,dt=0.125,out=ctx.createGain();
+  out.gain.value=0.5; out.connect(an);
+  for(var b=0;b<2;b++) P.forEach(function(s,i){
+    if(s[0]===null) return;
+    var t=t0+(b*16+i)*dt, f=55*Math.pow(2,s[0]/12), acc=s[1]?1.6:1;
+    var c=ctx.createOscillator(),m=ctx.createOscillator(),mg=ctx.createGain(),
+        vca=ctx.createGain(),flt=ctx.createBiquadFilter();
+    c.frequency.value=f; m.frequency.value=f*p.rat; mg.gain.value=f*p.idx;
+    m.connect(mg); mg.connect(c.frequency); c.connect(vca); vca.connect(flt); flt.connect(out);
+    flt.type='lowpass'; flt.Q.value=p.q*acc;
+    var fc=p.cut*sr;
+    flt.frequency.setValueAtTime(Math.min(18000,fc*(1+p.env*acc)),t);
+    flt.frequency.exponentialRampToValueAtTime(Math.max(30,fc),t+p.dec);
+    vca.gain.setValueAtTime(0,t); vca.gain.linearRampToValueAtTime(0.3*acc,t+0.005);
+    vca.gain.exponentialRampToValueAtTime(0.001,t+p.dec+0.05);
+    c.start(t); m.start(t); c.stop(t+p.dec+0.1); m.stop(t+p.dec+0.1);
+    setTimeout(function(){
+      var e=S('st'+i);
+      if(e){ e.classList.add('cur'); setTimeout(function(){ e.classList.remove('cur'); },110); }
+    },(t-ctx.currentTime)*1000);
+  });
+  setTimeout(function(){ busy=false; cancelAnimationFrame(raf); raf=0; },32*dt*1000+900);
+};
+})();
+</script>
+</body>
+</html>

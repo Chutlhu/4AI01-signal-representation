@@ -1,35 +1,99 @@
-<div style="padding:0.25rem 0">
-<div id="readout" style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;line-height:1.5"></div>
-<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-<div style="flex:3 1 400px">
-<svg width="100%" viewBox="0 0 680 300" role="img"><title>Amplitude response in decibels during Remez iterations</title><desc>Log-magnitude response of the low-pass filter with the achieved ripple bounds in red and the current alternation frequencies marked as circles.</desc><g id="plot"></g></svg>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remez exchange designer</title>
+<style>
+  html,body{margin:0;padding:0;background:transparent;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1a1a1a}
+</style>
+</head>
+<body>
+
+<!-- ==== everything below can be lifted verbatim into a reveal.js slide ==== -->
+<div id="remez-app">
+<style>
+#remez-app{
+  --rz-blue:#2E7CC4; --rz-red:#D33B3B; --rz-amber:#B07514; --rz-green:#2F8B44;
+  font-size:15px; line-height:1.4; box-sizing:border-box; width:100%;
+}
+#remez-app *{box-sizing:border-box}
+#remez-app .rz-readout{font-size:0.82em;opacity:0.85;margin:0 0 6px;text-align:center}
+#remez-app .rz-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+#remez-app .rz-panel{width:100%}
+#remez-app svg{width:100%;height:auto;display:block;overflow:visible}
+#remez-app text{font-family:inherit;font-size:13px;fill:currentColor;opacity:0.75}
+#remez-app text.rz-hi{opacity:1;font-size:14px}
+#remez-app .rz-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  justify-content:center;margin:10px 0 8px}
+#remez-app button{font:inherit;font-size:0.8em;padding:5px 12px;border-radius:6px;
+  cursor:pointer;background:transparent;color:inherit;
+  border:1px solid currentColor;opacity:0.75}
+#remez-app button:hover{opacity:1}
+#remez-app button.rz-primary{border-color:var(--rz-amber);color:var(--rz-amber);opacity:1;font-weight:600}
+#remez-app .rz-chk{font-size:0.75em;opacity:0.8;display:flex;align-items:center;gap:5px}
+#remez-app .rz-ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:6px 16px;width:100%}
+#remez-app .rz-cell{display:flex;flex-direction:column;gap:2px}
+#remez-app .rz-lab{font-size:0.72em;opacity:0.75;display:flex;justify-content:space-between;gap:6px}
+#remez-app .rz-lab b{font-weight:600;opacity:0.95}
+#remez-app input[type=range]{width:100%;accent-color:var(--rz-blue);margin:0}
+</style>
+
+<div class="rz-readout" id="rz-readout"></div>
+
+<div class="rz-top">
+  <div class="rz-panel">
+    <svg id="rz-svg-mag" viewBox="0 0 520 360" role="img">
+      <title>Magnitude response against the specification mask</title>
+      <desc>Log-magnitude response in decibels with a fixed red specification mask, dashed lines at the achieved ripple levels, and circles at the current alternation frequencies.</desc>
+      <g id="rz-plot"></g>
+    </svg>
+  </div>
+  <div class="rz-panel">
+    <svg id="rz-svg-ir" viewBox="0 0 520 360" role="img">
+      <title>Impulse response</title>
+      <desc>Stem plot of the symmetric finite impulse response of the current filter.</desc>
+      <g id="rz-ir"></g>
+    </svg>
+  </div>
 </div>
-<div style="flex:2 1 260px">
-<svg width="100%" viewBox="0 0 680 140" role="img"><title>Impulse response</title><desc>Stem plot of the symmetric finite impulse response of the current filter.</desc><g id="ir"></g></svg>
+
+<div class="rz-btns">
+  <button id="rz-step" class="rz-primary">Iterate</button>
+  <button id="rz-run">Converge</button>
+  <button id="rz-find">Smallest N meeting spec</button>
+  <button id="rz-reset">Reset</button>
+  <label class="rz-chk"><input type="checkbox" id="rz-auto"> optimize on change</label>
 </div>
+
+<div class="rz-ctl" id="rz-ctl"></div>
 </div>
-<div style="display:flex;gap:8px;margin:8px 0 6px;flex-wrap:wrap">
-<button id="bstep" style="padding:6px 14px;border:1px solid #BA7517;background:#FAEEDA;color:#633806;border-radius:var(--radius);cursor:pointer;font-size:13px">Iterate</button>
-<button id="brun" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Run to convergence</button>
-<button id="breset" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Reset</button>
-</div>
-<div id="ctl" style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center;font-size:13px;color:var(--text-secondary)"></div>
-</div>
+
 <script>
 (function(){
-var P={N:17,nuc:0.20,nua:0.25,K:1};
+"use strict";
+var P={N:17,nuc:0.20,nua:0.25,a1:1.0,a2:-20};
 var st={ext:null,a:null,delta:0,it:0,maxE:0,ok:false};
-var grid=[],segs=[];
+var grid=[],segs=[],sl={},auto=false;
+
+/* ---------- specification -> linear deviations and weights ---------- */
+function d1(){ return Math.pow(10,P.a1/20)-1; }          /* passband deviation  */
+function d2(){ return Math.pow(10,P.a2/20); }            /* stopband deviation  */
+function Kw(){ return d1()/d2(); }                       /* W_stop / W_pass     */
+
+/* ---------- dense frequency grid on B = [0,nuc] U [nua,0.5] ---------- */
 function buildGrid(){
   grid=[];segs=[];
-  var M=(P.N-1)/2, tot=P.nuc+(0.5-P.nua);
-  var g=24*(M+2);
-  var nP=Math.max(6,Math.round(g*P.nuc/tot)), nS=Math.max(6,g-nP);
-  var s1=[],s2=[],i;
+  var M=(P.N-1)/2, tot=P.nuc+(0.5-P.nua), g=Math.min(2600,24*(M+2));
+  var nP=Math.max(6,Math.round(g*P.nuc/tot)), nS=Math.max(6,g-nP), s1=[],s2=[],i,K=Kw();
   for(i=0;i<=nP;i++){ s1.push(grid.length); grid.push({nu:P.nuc*i/nP,D:1,W:1}); }
-  for(i=0;i<=nS;i++){ s2.push(grid.length); grid.push({nu:P.nua+(0.5-P.nua)*i/nS,D:0,W:P.K}); }
+  for(i=0;i<=nS;i++){ s2.push(grid.length); grid.push({nu:P.nua+(0.5-P.nua)*i/nS,D:0,W:K}); }
   segs=[s1,s2];
 }
+
+/* ---------- Gauss-Jordan with partial pivoting ---------- */
 function gauss(A,n){
   for(var i=0;i<n;i++){
     var p=i,r,c;
@@ -37,10 +101,13 @@ function gauss(A,n){
     var t=A[i];A[i]=A[p];A[p]=t;
     var pv=A[i][i]; if(Math.abs(pv)<1e-13) return null;
     for(c=i;c<=n;c++) A[i][c]/=pv;
-    for(r=0;r<n;r++){ if(r===i) continue; var fa=A[r][i]; if(!fa) continue; for(c=i;c<=n;c++) A[r][c]-=fa*A[i][c]; }
+    for(r=0;r<n;r++){ if(r===i) continue; var fa=A[r][i]; if(!fa) continue;
+      for(c=i;c<=n;c++) A[r][c]-=fa*A[i][c]; }
   }
-  return A.map(function(row){return row[n];});
+  return A.map(function(row){ return row[n]; });
 }
+
+/* ---------- step 2a: sum_n a_n cos(2 pi nu_k n) + (-1)^k delta / W = D ---------- */
 function solve(){
   var M=(P.N-1)/2,n=M+2,A=[],k,m;
   for(k=0;k<n;k++){
@@ -54,18 +121,21 @@ function solve(){
   st.a=x.slice(0,M+1); st.delta=Math.abs(x[M+1]); return true;
 }
 function HR(nu){ var s=0; for(var m=0;m<st.a.length;m++) s+=st.a[m]*Math.cos(2*Math.PI*nu*m); return s; }
+
+/* ---------- step 2b/2c: extrema search and exchange ---------- */
 function merge(c){
   var out=[];
   for(var i=0;i<c.length;i++){
-    if(out.length&&(out[out.length-1].E>0)===(c[i].E>0)){ if(Math.abs(c[i].E)>Math.abs(out[out.length-1].E)) out[out.length-1]=c[i]; }
-    else out.push(c[i]);
+    if(out.length&&(out[out.length-1].E>0)===(c[i].E>0)){
+      if(Math.abs(c[i].E)>Math.abs(out[out.length-1].E)) out[out.length-1]=c[i];
+    } else out.push(c[i]);
   }
   return out;
 }
+function errs(){ return grid.map(function(p){ return p.W*(p.D-HR(p.nu)); }); }
+function updMax(){ var E=errs(); st.maxE=Math.max.apply(null,E.map(Math.abs)); return E; }
 function newExtrema(){
-  var E=grid.map(function(p){return p.W*(p.D-HR(p.nu));});
-  st.maxE=Math.max.apply(null,E.map(Math.abs));
-  var c=[];
+  var E=updMax(),c=[];
   segs.forEach(function(seg){
     for(var j=0;j<seg.length;j++){
       var i=seg[j],e=E[i],pv=j>0?E[seg[j-1]]:null,nx=j<seg.length-1?E[seg[j+1]]:null,ok;
@@ -76,11 +146,10 @@ function newExtrema(){
     }
   });
   c=merge(c);
-  var need=(P.N-1)/2+2;
-  var guard=0;
-  while(c.length>need&&guard++<200){
-    var mi=0;
-    for(var q=1;q<c.length;q++) if(Math.abs(c[q].E)<Math.abs(c[mi].E)) mi=q;
+  var need=(P.N-1)/2+2,guard=0;
+  while(c.length>need&&guard++<400){
+    var mi=0,q;
+    for(q=1;q<c.length;q++) if(Math.abs(c[q].E)<Math.abs(c[mi].E)) mi=q;
     if(mi===0||mi===c.length-1||c.length-2<need){
       if(Math.abs(c[0].E)<Math.abs(c[c.length-1].E)) c.splice(0,1); else c.splice(c.length-1,1);
     } else {
@@ -91,57 +160,149 @@ function newExtrema(){
   }
   if(c.length>=need) st.ext=c.slice(0,need);
 }
-function reset(){
-  buildGrid();
-  var need=(P.N-1)/2+2,e=[];
-  for(var k=0;k<need;k++){ var g=grid[Math.round(k*(grid.length-1)/(need-1))]; e.push({nu:g.nu,D:g.D,W:g.W,E:0}); }
-  st.ext=e; st.it=0; st.ok=false; solve(); newExtrema0(); render();
+function step(doRender){
+  newExtrema(); solve(); updMax(); st.it++;
+  st.ok=(st.maxE-st.delta)/Math.max(st.delta,1e-12)<1e-3;
+  if(doRender!==false) render();
 }
-function newExtrema0(){ var E=grid.map(function(p){return p.W*(p.D-HR(p.nu));}); st.maxE=Math.max.apply(null,E.map(Math.abs)); }
-function step(){ newExtrema(); solve(); newExtrema0(); st.it++; st.ok=(st.maxE-st.delta)/Math.max(st.delta,1e-12)<1e-3; render(); }
-var X0=56,X1=640,Y0=24,Y1=276,DB0=10,DB1=-90;
+function reset(doRender){
+  buildGrid();
+  var need=(P.N-1)/2+2,e=[],k;
+  for(k=0;k<need;k++){ var g=grid[Math.round(k*(grid.length-1)/(need-1))];
+    e.push({nu:g.nu,D:g.D,W:g.W,E:0}); }
+  st.ext=e; st.it=0; st.ok=false; solve(); updMax();
+  if(doRender!==false) render();
+}
+function runAll(doRender){ for(var i=0;i<40&&!st.ok;i++) step(false); if(doRender!==false) render(); }
+
+/* ---------- outer loop: smallest N meeting the spec (Kaiser seed) ---------- */
+function trial(n){ P.N=n; reset(false); runAll(false); return st.delta<=d1()*(1+1e-9); }
+function findN(){
+  var est=Math.ceil((-20*Math.log10(Math.sqrt(d1()*d2()))-13)/(14.6*(P.nua-P.nuc))+1);
+  if(est%2===0) est++;
+  est=Math.max(9,Math.min(161,est));
+  var n=est;
+  if(trial(n)){ while(n>9&&trial(n-2)) n-=2; }
+  else { while(n<161&&!trial(n+2)) n+=2; n=Math.min(161,n+2); }
+  P.N=n; reset(false); runAll(false); sync(); render();
+}
+
+/* ---------- rendering ---------- */
+var X0=54,X1=500,Y0=16,Y1=300,DB0=10,DB1=-90;
 function px(nu){ return X0+(X1-X0)*nu/0.5; }
 function py(db){ return Y0+(Y1-Y0)*(DB0-db)/(DB0-DB1); }
-function dbv(v){ return Math.max(DB1,20*Math.log10(Math.max(Math.abs(v),1e-9))); }
+function cl(db){ return Math.max(DB1,Math.min(DB0,db)); }
+function dbv(v){ return cl(20*Math.log10(Math.max(Math.abs(v),1e-9))); }
+function ln(x1,y1,x2,y2,col,w,op,da){
+  return '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+
+    '" stroke="'+col+'" stroke-width="'+w+'"'+(op!==undefined?' opacity="'+op+'"':'')+
+    (da?' stroke-dasharray="'+da+'"':'')+'/>';
+}
 function render(){
-  var h='',i;
-  h+='<rect x="'+X0+'" y="'+Y0+'" width="'+(X1-X0)+'" height="'+(Y1-Y0)+'" fill="none" stroke="var(--t)" stroke-width="0.5" opacity="0.6"/>';
-  for(var db=0;db>=-80;db-=20){ h+='<line x1="'+X0+'" y1="'+py(db).toFixed(1)+'" x2="'+X1+'" y2="'+py(db).toFixed(1)+'" stroke="var(--t)" stroke-width="0.5" opacity="0.15"/><text class="ts" x="'+(X0-8)+'" y="'+(py(db)+4).toFixed(1)+'" text-anchor="end">'+db+'</text>'; }
-  for(var t=0;t<=0.5001;t+=0.1){ h+='<text class="ts" x="'+px(t).toFixed(1)+'" y="'+(Y1+18)+'" text-anchor="middle">'+t.toFixed(1)+'</text>'; }
-  h+='<text class="ts" x="'+((X0+X1)/2)+'" y="'+(Y1+38)+'" text-anchor="middle">ν</text>';
-  var dp=st.delta, ds=st.delta/P.K;
-  h+='<line x1="'+X0+'" y1="'+py(dbv(1+dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(1+dp)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
-  h+='<line x1="'+X0+'" y1="'+py(dbv(1-dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(1-dp)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
-  h+='<line x1="'+px(P.nuc).toFixed(1)+'" y1="'+py(dbv(1-dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(ds)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
-  h+='<line x1="'+px(P.nua).toFixed(1)+'" y1="'+py(dbv(ds)).toFixed(1)+'" x2="'+X1+'" y2="'+py(dbv(ds)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
+  var h='',i,D1=d1();
+
+  /* --- axes --- */
+  h+='<rect x="'+X0+'" y="'+Y0+'" width="'+(X1-X0)+'" height="'+(Y1-Y0)+
+     '" fill="none" stroke="currentColor" stroke-width="0.7" opacity="0.45"/>';
+  for(var db=0;db>=-80;db-=20){
+    h+=ln(X0,py(db),X1,py(db),'currentColor',0.7,0.12);
+    h+='<text x="'+(X0-8)+'" y="'+(py(db)+4).toFixed(1)+'" text-anchor="end">'+db+'</text>';
+  }
+  for(var t=0;t<=0.5001;t+=0.1)
+    h+='<text x="'+px(t).toFixed(1)+'" y="'+(Y1+20)+'" text-anchor="middle">'+t.toFixed(1)+'</text>';
+  h+='<text class="rz-hi" x="'+((X0+X1)/2)+'" y="'+(Y1+44)+'" text-anchor="middle">reduced frequency \u03BD</text>';
+  h+='<text x="'+(X0-8)+'" y="'+(Y0+4)+'" text-anchor="end">dB</text>';
+
+  /* --- fixed specification mask --- */
+  var up=cl(P.a1), lo=cl(20*Math.log10(Math.max(1-D1,1e-9))), sb=cl(P.a2);
+  h+=ln(X0,py(up),px(P.nuc),py(up),'var(--rz-red)',1.6);
+  h+=ln(X0,py(lo),px(P.nuc),py(lo),'var(--rz-red)',1.6);
+  h+=ln(px(P.nuc),py(lo),px(P.nuc),py(sb),'var(--rz-red)',1.6);
+  h+=ln(px(P.nua),py(sb),X1,py(sb),'var(--rz-red)',1.6);
+
+  /* --- achieved ripple levels (these are what moves) --- */
+  var ap=dbv(1+st.delta), as=dbv(st.delta/Kw());
+  h+=ln(X0,py(ap),px(P.nuc),py(ap),'var(--rz-amber)',1.2,1,'4 4');
+  h+=ln(px(P.nua),py(as),X1,py(as),'var(--rz-amber)',1.2,1,'4 4');
+
+  /* --- response and alternation points --- */
   var d='';
-  for(i=0;i<=900;i++){ var nu=0.5*i/900,yy=py(dbv(HR(nu))); d+=(i?' L':'M')+px(nu).toFixed(1)+' '+yy.toFixed(1); }
-  h+='<path d="'+d+'" fill="none" stroke="#378ADD" stroke-width="1.3"/>';
-  st.ext.forEach(function(e){ h+='<circle cx="'+px(e.nu).toFixed(1)+'" cy="'+py(dbv(HR(e.nu))).toFixed(1)+'" r="4.5" fill="none" stroke="#378ADD" stroke-width="1.4"/>'; });
-  document.getElementById('plot').innerHTML=h;
+  for(i=0;i<=800;i++){ var nu=0.5*i/800; d+=(i?' L':'M')+px(nu).toFixed(1)+' '+py(dbv(HR(nu))).toFixed(1); }
+  h+='<path d="'+d+'" fill="none" stroke="var(--rz-blue)" stroke-width="1.6"/>';
+  st.ext.forEach(function(e){
+    h+='<circle cx="'+px(e.nu).toFixed(1)+'" cy="'+py(dbv(HR(e.nu))).toFixed(1)+
+       '" r="4.5" fill="none" stroke="var(--rz-blue)" stroke-width="1.6"/>';
+  });
+  document.getElementById('rz-plot').innerHTML=h;
+
+  /* --- impulse response --- */
   var M=(P.N-1)/2,hh=new Array(P.N);
   hh[M]=st.a[0]; for(i=1;i<=M;i++){ hh[M-i]=st.a[i]/2; hh[M+i]=st.a[i]/2; }
-  var mx=Math.max.apply(null,hh.map(Math.abs)),s='';
-  s+='<line x1="'+X0+'" y1="80" x2="'+X1+'" y2="80" stroke="var(--t)" stroke-width="0.5" opacity="0.5"/>';
-  for(i=0;i<P.N;i++){ var xx=X0+(X1-X0)*i/(P.N-1),yy2=80-55*hh[i]/mx; s+='<line x1="'+xx.toFixed(1)+'" y1="80" x2="'+xx.toFixed(1)+'" y2="'+yy2.toFixed(1)+'" stroke="#378ADD" stroke-width="1.2"/><circle cx="'+xx.toFixed(1)+'" cy="'+yy2.toFixed(1)+'" r="3" fill="none" stroke="#378ADD" stroke-width="1.2"/>'; }
-  s+='<text class="ts" x="'+((X0+X1)/2)+'" y="128" text-anchor="middle">h(n),  n = 0 … '+(P.N-1)+'</text>';
-  document.getElementById('ir').innerHTML=s;
-  document.getElementById('readout').innerHTML='Iteration '+st.it+' &nbsp;·&nbsp; M+2 = '+((P.N-1)/2+2)+' alternations &nbsp;·&nbsp; δ = '+st.delta.toFixed(5)+' &nbsp;·&nbsp; max|E| = '+st.maxE.toFixed(5)+'<br>passband ripple '+dbv(1+dp).toFixed(2)+' dB &nbsp;·&nbsp; stopband '+dbv(ds).toFixed(1)+' dB &nbsp;·&nbsp; '+(st.ok?'converged':'gap '+(st.maxE-st.delta).toFixed(5));
+  var mx=Math.max.apply(null,hh.map(Math.abs)), base=170, half=130;
+  var s=ln(X0,base,X1,base,'currentColor',0.7,0.45);
+  for(i=0;i<P.N;i++){
+    var xx=X0+(X1-X0)*i/(P.N-1), yy=base-half*hh[i]/mx;
+    s+=ln(xx,base,xx,yy,'var(--rz-blue)',1.3);
+    if(P.N<=45) s+='<circle cx="'+xx.toFixed(1)+'" cy="'+yy.toFixed(1)+
+      '" r="3" fill="none" stroke="var(--rz-blue)" stroke-width="1.3"/>';
+  }
+  s+='<text x="'+X0+'" y="'+(base+half+26)+'" text-anchor="middle">0</text>';
+  s+='<text x="'+X1+'" y="'+(base+half+26)+'" text-anchor="middle">'+(P.N-1)+'</text>';
+  s+='<text class="rz-hi" x="'+((X0+X1)/2)+'" y="'+(Y1+44)+'" text-anchor="middle">impulse response h(n)</text>';
+  document.getElementById('rz-ir').innerHTML=s;
+
+  /* --- readout --- */
+  var pass=st.delta<=D1*(1+1e-9);
+  var verdict=st.ok
+    ? (pass?'<b style="color:var(--rz-green)">spec met</b>'
+           :'<b style="color:var(--rz-red)">spec NOT met &mdash; increase N</b>')
+    : 'gap '+(st.maxE-st.delta).toFixed(5);
+  document.getElementById('rz-readout').innerHTML=
+    'iteration '+st.it+' &nbsp;\u00B7&nbsp; M+2 = '+((P.N-1)/2+2)+' alternations'+
+    ' &nbsp;\u00B7&nbsp; \u03B4 = '+st.delta.toFixed(5)+
+    ' &nbsp;\u00B7&nbsp; max|E| = '+st.maxE.toFixed(5)+
+    ' &nbsp;\u00B7&nbsp; achieved '+ap.toFixed(2)+' / '+as.toFixed(1)+' dB'+
+    ' &nbsp;\u00B7&nbsp; '+verdict;
 }
+
+/* ---------- controls ---------- */
+function sync(){ for(var k in sl){ sl[k].r.value=P[k]; sl[k].v.textContent=sl[k].f(P[k]); } }
 function slider(label,key,min,max,stp,fmt){
-  var c=document.getElementById('ctl');
-  var l=document.createElement('span'); l.textContent=label; c.appendChild(l);
-  var r=document.createElement('input'); r.type='range'; r.min=min; r.max=max; r.step=stp; r.value=P[key]; c.appendChild(r);
-  var v=document.createElement('span'); v.style.minWidth='44px'; v.style.textAlign='right'; v.textContent=fmt(P[key]); c.appendChild(v);
-  r.oninput=function(){ P[key]=parseFloat(r.value); if(P.nua<=P.nuc+0.01){ if(key==='nuc') P.nuc=P.nua-0.01; else P.nua=P.nuc+0.01; } v.textContent=fmt(P[key]); reset(); };
+  var c=document.getElementById('rz-ctl');
+  var cell=document.createElement('div'); cell.className='rz-cell';
+  var lab=document.createElement('div'); lab.className='rz-lab';
+  var nm=document.createElement('span'); nm.innerHTML=label;
+  var v=document.createElement('b'); v.textContent=fmt(P[key]);
+  lab.appendChild(nm); lab.appendChild(v);
+  var r=document.createElement('input');
+  r.type='range'; r.min=min; r.max=max; r.step=stp; r.value=P[key];
+  cell.appendChild(lab); cell.appendChild(r); c.appendChild(cell);
+  sl[key]={r:r,v:v,f:fmt};
+  r.oninput=function(){
+    P[key]=parseFloat(r.value);
+    if(P.nua<=P.nuc+0.02){ if(key==='nuc') P.nuc=P.nua-0.02; else P.nua=P.nuc+0.02; sync(); }
+    v.textContent=fmt(P[key]);
+    reset(false); if(auto) runAll(false); render();
+  };
+  /* keep reveal.js from swallowing arrow keys while a slider has focus */
+  r.addEventListener('keydown',function(ev){ ev.stopPropagation(); });
 }
-slider('Length N','N',9,41,2,function(x){return x;});
-slider('ν_c','nuc',0.05,0.40,0.01,function(x){return x.toFixed(2);});
-slider('ν_a','nua',0.10,0.48,0.01,function(x){return x.toFixed(2);});
-slider('δ₁/δ₂','K',0.2,20,0.2,function(x){return x.toFixed(1);});
-document.getElementById('bstep').onclick=function(){ step(); };
-document.getElementById('brun').onclick=function(){ for(var i=0;i<12&&!st.ok;i++) step(); };
-document.getElementById('breset').onclick=function(){ reset(); };
-reset();
+slider('length N','N',9,161,2,function(x){ return x; });
+slider('\u03BD<sub>c</sub>','nuc',0.05,0.40,0.01,function(x){ return x.toFixed(2); });
+slider('\u03BD<sub>a</sub>','nua',0.10,0.48,0.01,function(x){ return x.toFixed(2); });
+slider('passband ripple','a1',0.05,3,0.05,function(x){ return x.toFixed(2)+' dB'; });
+slider('stopband atten.','a2',-90,-10,1,function(x){ return x.toFixed(0)+' dB'; });
+
+document.getElementById('rz-step').onclick=function(){ step(true); };
+document.getElementById('rz-run').onclick=function(){ runAll(true); };
+document.getElementById('rz-find').onclick=function(){ findN(); };
+document.getElementById('rz-reset').onclick=function(){ reset(true); };
+document.getElementById('rz-auto').onchange=function(e){ auto=e.target.checked; if(auto) runAll(true); };
+
+reset(true);
 })();
 </script>
+<!-- ==== end of liftable block ==== -->
+
+</body>
+</html>

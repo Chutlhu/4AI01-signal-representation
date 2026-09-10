@@ -1,59 +1,242 @@
-<div style="padding:0.5rem 0">
-<div id="pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
-<svg width="100%" viewBox="0 0 680 290" role="img"><title>Remez exchange mechanism</title><desc>A caricature weighted-error curve showing the initial uniform guess, the solved polynomial equioscillating at those points, the true extrema which overshoot, the exchange step, and the resulting larger delta.</desc>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remez exchange mechanism</title>
+<style>
+  :root{
+    --t:#12161c;
+    --text-primary:#12161c;
+    --text-secondary:#5b6472;
+    --surface-1:#ffffff;
+    --border:#d7dade;
+    --border-strong:#9aa1ab;
+    --radius:3px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:12px 16px 16px;
+    background:#fff;color:var(--text-primary);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:15px;line-height:1.35;
+  }
+  .ts{font-size:12.5px;fill:var(--t)}
+  #readout{
+    font-size:13px;color:var(--text-secondary);
+    margin:2px 0 4px;min-height:1.3em;font-variant-numeric:tabular-nums;
+  }
+  #caption{font-size:13.5px;margin:8px 0 10px;min-height:3.1em;max-width:64em}
+  #caption b{font-weight:600}
+  .glab{font-size:12px;color:var(--text-secondary);align-self:center;padding-right:2px}
+  button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="pills" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"></div>
+<div id="readout"></div>
+<svg width="100%" viewBox="-28 62 708 200" role="img"><title>Remez exchange mechanism over two iterations</title><desc>A caricature weighted-error curve. The first pass shows the uniform reference, the solved polynomial equioscillating at those points, the true extrema which overshoot, the exchange, and the bracket in which the next delta must fall. The second pass repeats the solve, extrema search and exchange, with a larger delta, a smaller maximum error and a visibly narrower bracket.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 <line x1="56" y1="170" x2="650" y2="170" stroke="var(--t)" stroke-width="0.5" opacity="0.5"/>
 <text class="ts" x="48" y="174" text-anchor="end">0</text>
 <g id="dyn"></g>
 </svg>
-<div style="display:flex;gap:8px;margin-top:10px">
+<div id="caption"></div>
+<div style="display:flex;gap:8px">
 <button id="prev" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Previous</button>
 <button id="next" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Next</button>
 </div>
-</div>
 <script>
 (function(){
-var MK=[100,200,300,400,500,600], PK=MK.map(function(x){return x+25;});
-var DA=45, R=45/Math.cos(Math.PI*0.25);
-function f(x){ return R*Math.cos(Math.PI*(x-125)/100); }
-function yv(x){ return 170-f(x); }
-var names=["Initialize","Solve","Find extrema","Exchange","New δ"];
-var s=0;
+var Y0=170, XL=56, XR=650, HP=100;
+var C_REF='#378ADD', C_EXT='#BA7517', C_INK='var(--t)';
+
+/* Two passes of the caricature. Each pass is a cosine of half-period HP whose
+   extrema sit `shift` to the right of its reference points, so the error at the
+   reference is d = M*cos(pi*shift/HP): a small shift means d is close to the
+   true maximum M, i.e. an almost equioscillating solution. */
+var IT=[
+  {nodes:[100,200,300,400,500,600], shift:25, M:45/Math.cos(Math.PI*0.25)},
+  {nodes:null,                      shift:14, M:61}
+];
+IT.forEach(function(it,k){
+  if(k>0) it.nodes=IT[k-1].ext;
+  it.ext=it.nodes.map(function(n){ return n+it.shift; });
+  it.e0=it.nodes[0]+it.shift;
+  it.d=it.M*Math.cos(Math.PI*it.shift/HP);
+  it.gap=(it.M-it.d)/it.d;
+});
+var SUP=['⁽⁰⁾','⁽¹⁾','⁽²⁾'];
+
+var STEP=[
+  {k:0,ph:'init' ,name:'Initialize'},
+  {k:0,ph:'solve',name:'Solve'},
+  {k:0,ph:'ext'  ,name:'Extrema'},
+  {k:0,ph:'exch' ,name:'Exchange'},
+  {k:0,ph:'band' ,name:'New δ'},
+  {k:1,ph:'solve',name:'Solve'},
+  {k:1,ph:'ext'  ,name:'Extrema'},
+  {k:1,ph:'exch' ,name:'Exchange'},
+  {k:1,ph:'band' ,name:'Converging'}
+];
+var GROUPS=[{label:'k = 0',from:0,to:4},{label:'k = 1',from:5,to:8}];
+
+var s=0, btns=[];
 var dyn=document.getElementById('dyn'), pills=document.getElementById('pills');
-function curvePath(){ var d="M56 "+yv(56).toFixed(1); for(var x=59;x<=650;x+=3) d+=" L"+x+" "+yv(x).toFixed(1); return d; }
-function dash(y,label,col){ return '<line x1="56" y1="'+y+'" x2="650" y2="'+y+'" stroke="'+col+'" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.8"/><text class="ts" x="48" y="'+(y+4)+'" text-anchor="end">'+label+'</text>'; }
-function render(){
-  var h="";
-  if(s===0){
-    for(var i=0;i<MK.length;i++){
-      h+='<line x1="'+MK[i]+'" y1="162" x2="'+MK[i]+'" y2="178" stroke="#BA7517" stroke-width="1.5"/>';
-      h+='<text class="ts" x="'+MK[i]+'" y="196" text-anchor="middle">ν'+"₀₁₂₃₄₅"[i]+'</text>';
-    }
-  } else {
-    h+='<path d="'+curvePath()+'" fill="none" stroke="#378ADD" stroke-width="1.6"/>';
-    if(s>=1&&s<=3){ h+=dash(170-DA,"+δ⁽⁰⁾","var(--t)")+dash(170+DA,"−δ⁽⁰⁾","var(--t)"); }
-    if(s>=2){ h+=dash(170-R,(s===4?"+δ⁽¹⁾":"+max|E|"),"#BA7517")+dash(170+R,(s===4?"−δ⁽¹⁾":"−max|E|"),"#BA7517"); }
-    if(s<=3){ for(var j=0;j<MK.length;j++){ h+='<circle cx="'+MK[j]+'" cy="'+yv(MK[j]).toFixed(1)+'" r="4.5" fill="none" stroke="#378ADD" stroke-width="1.6"/>'; } }
-    if(s>=2){ for(var k=0;k<PK.length;k++){ h+='<circle cx="'+PK[k]+'" cy="'+yv(PK[k]).toFixed(1)+'" r="4.5" fill="#BA7517" stroke="none"/>'; } }
-    if(s===3){ for(var m=0;m<MK.length;m++){ var y0=yv(MK[m]), y1=yv(PK[m]); var yy=(y0<170)?Math.min(y0,y1)-14:Math.max(y0,y1)+16; h+='<line x1="'+MK[m]+'" y1="'+yy+'" x2="'+(PK[m]-3)+'" y2="'+yy+'" stroke="#BA7517" stroke-width="1.2" marker-end="url(#arrow)"/>'; } }
+var readout=document.getElementById('readout'), caption=document.getElementById('caption');
+
+function num(v){ return (v/100).toFixed(3); }
+function pct(r){ return Math.round(r*100)+'%'; }
+function fv(it,x){ return it.M*Math.cos(Math.PI*(x-it.e0)/HP); }
+function yv(it,x){ return Y0-fv(it,x); }
+function curve(it,col,w,op,da){
+  var d='M'+XL+' '+yv(it,XL).toFixed(1);
+  for(var x=XL+3;x<=XR;x+=3) d+=' L'+x+' '+yv(it,x).toFixed(1);
+  return '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" opacity="'+op+'"'+(da?' stroke-dasharray="'+da+'"':'')+'/>';
+}
+function dash(y,label,col,op,dy){
+  return '<line x1="'+XL+'" y1="'+y.toFixed(1)+'" x2="'+XR+'" y2="'+y.toFixed(1)+'" stroke="'+col+'" stroke-width="0.5" stroke-dasharray="4 4" opacity="'+op+'"/>'
+       + '<text class="ts" x="48" y="'+(y+4+(dy||0)).toFixed(1)+'" text-anchor="end" fill="'+col+'">'+label+'</text>';
+}
+/* once the two levels are within a few pixels their labels would overlap, so
+   pull delta towards the axis and max|E| away from it */
+function nudge(it){ return (it.M-it.d<15)?6:0; }
+function deltaLines(it,k,alone){
+  var o=alone?0:nudge(it);
+  return dash(Y0-it.d,'+δ'+SUP[k],C_INK,0.85,o)+dash(Y0+it.d,'−δ'+SUP[k],C_INK,0.85,-o);
+}
+function maxLines(it,k){
+  var o=nudge(it);
+  return dash(Y0-it.M,'+max|E|',C_EXT,0.85,-o)+dash(Y0+it.M,'−max|E|',C_EXT,0.85,o);
+}
+/* the interval [delta, max|E|] that brackets the optimum delta* */
+function bracket(it,filled){
+  var a=Y0-it.M, b=Y0-it.d, c=Y0+it.d, e=Y0+it.M, w=XR-XL, o='';
+  function box(y,h){
+    return filled
+      ? '<rect x="'+XL+'" y="'+y.toFixed(1)+'" width="'+w+'" height="'+h.toFixed(1)+'" fill="'+C_EXT+'" opacity="0.14"/>'
+      : '<rect x="'+XL+'" y="'+y.toFixed(1)+'" width="'+w+'" height="'+h.toFixed(1)+'" fill="none" stroke="'+C_EXT+'" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.4"/>';
   }
+  o+=box(a,b-a)+box(c,e-c);
+  return o;
+}
+/* I-beam measuring max|E| - delta, legible even when the gap is a few pixels */
+function gapMark(it){
+  var y1=Y0-it.M, y2=Y0-it.d, x=78;
+  return '<path d="M'+(x-4)+' '+y1.toFixed(1)+'H'+(x+4)+'M'+x+' '+y1.toFixed(1)+'V'+y2.toFixed(1)+'M'+(x-4)+' '+y2.toFixed(1)+'H'+(x+4)+'" fill="none" stroke="'+C_EXT+'" stroke-width="1.1"/>'
+       + '<text class="ts" x="'+(x+7)+'" y="'+(y1-5).toFixed(1)+'" fill="'+C_EXT+'">gap</text>';
+}
+function refDots(it,xs){
+  var o='';
+  for(var i=0;i<xs.length;i++) o+='<circle cx="'+xs[i]+'" cy="'+yv(it,xs[i]).toFixed(1)+'" r="4.5" fill="none" stroke="'+C_REF+'" stroke-width="1.6"/>';
+  return o;
+}
+function extDots(it){
+  var o='';
+  for(var i=0;i<it.ext.length;i++) o+='<circle cx="'+it.ext[i]+'" cy="'+yv(it,it.ext[i]).toFixed(1)+'" r="4.5" fill="'+C_EXT+'" stroke="none"/>';
+  return o;
+}
+function arrows(it){
+  var o='';
+  for(var m=0;m<it.nodes.length;m++){
+    var y0=yv(it,it.nodes[m]), y1=yv(it,it.ext[m]);
+    var yy=(y0<Y0)?Math.min(y0,y1)-14:Math.max(y0,y1)+16;
+    o+='<line x1="'+it.nodes[m]+'" y1="'+yy.toFixed(1)+'" x2="'+(it.ext[m]-2)+'" y2="'+yy.toFixed(1)+'" stroke="'+C_EXT+'" stroke-width="1.2" marker-end="url(#arrow)"/>';
+  }
+  return o;
+}
+function note(it,txt){
+  return '<text class="ts" x="350" y="'+(Y0-it.M-7).toFixed(1)+'" text-anchor="middle" fill="#633806">'+txt+'</text>';
+}
+
+function render(){
+  var st=STEP[s], k=st.k, ph=st.ph, it=IT[k], prev=k>0?IT[k-1]:null;
+  var h='', ro='', cap='';
+
+  if(ph==='init'){
+    for(var i=0;i<it.nodes.length;i++){
+      h+='<line x1="'+it.nodes[i]+'" y1="162" x2="'+it.nodes[i]+'" y2="178" stroke="'+C_EXT+'" stroke-width="1.5"/>';
+      h+='<text class="ts" x="'+it.nodes[i]+'" y="196" text-anchor="middle">ν'+'₀₁₂₃₄₅'[i]+'</text>';
+    }
+    ro='k = 0 · six reference points, uniform over the band B · nothing solved yet';
+    cap='Start from <b>M+2 = 6</b> reference frequencies spread uniformly over the band <b>B</b>. Nothing is optimal about this choice — it is only a seed for the exchange.';
+  } else {
+    /* what the previous pass achieved, kept as a faint reference */
+    if(prev) h+=bracket(prev,false);
+    if(ph==='band') h+=bracket(it,true);
+
+    if(prev&&(ph==='solve'||ph==='ext')) h+=curve(prev,C_INK,1,0.22,'4 4');
+    h+=curve(it,C_REF,1.6,(ph==='band'?0.35:1),null);
+
+    h+=deltaLines(it,k,ph==='solve');
+    if(ph!=='solve') h+=maxLines(it,k)+gapMark(it);
+
+    if(ph==='solve'||ph==='ext'||ph==='exch') h+=refDots(it,it.nodes);
+    if(ph!=='solve') h+=extDots(it);
+    if(ph==='exch') h+=arrows(it);
+    if(ph==='band') h+=refDots(IT[k],it.ext);
+
+    if(ph==='band'){
+      h+=note(it,k===0
+        ? 'δ'+SUP[k+1]+' must land in this band'
+        : 'δ* is trapped in this band');
+    }
+
+    var dtxt='δ'+SUP[k]+' = '+num(it.d);
+    if(ph==='solve'){
+      ro='k = '+k+' · '+dtxt+(prev?' (was '+num(prev.d)+')':'')+' · max|E| not measured yet';
+      cap=(k===0)
+        ? 'Solve the linear system on that reference: the weighted error alternates exactly <b>±'+num(it.d)+'</b> at the six points. Nothing yet forces the true extrema to sit there.'
+        : 'Solve again on the exchanged reference. The plateau has risen to <b>'+num(it.d)+'</b> from '+num(prev.d)+' — δ never decreases. Grey dashed = the previous error curve.';
+    } else if(ph==='ext'){
+      ro='k = '+k+' · '+dtxt+' · max|E| = '+num(it.M)+' · gap = '+pct(it.gap)+' of δ'+(prev?' (was '+pct(prev.gap)+')':'');
+      cap=(k===0)
+        ? 'On the dense grid the true extrema (orange) fall between the reference points and overshoot: <b>max|E| = '+num(it.M)+'</b>, i.e. <b>'+pct(it.gap)+'</b> above δ'+SUP[k]+'. The error does not equioscillate, so this is not the minimax filter.'
+        : 'The overshoot has collapsed from <b>'+pct(prev.gap)+'</b> to <b>'+pct(it.gap)+'</b> of δ: max|E| fell '+num(prev.M)+' → <b>'+num(it.M)+'</b> while δ rose '+num(prev.d)+' → <b>'+num(it.d)+'</b>. The two are squeezing on δ* from both sides.';
+    } else if(ph==='exch'){
+      ro='k = '+k+' · '+dtxt+' · max|E| = '+num(it.M)+' · reference → extrema (shift '+it.shift+' px)';
+      cap=(k===0)
+        ? 'Exchange: every reference point ν<sub>k</sub> is moved onto the neighbouring extremum. That new set becomes the reference of the next pass.'
+        : 'Exchange again — the points now move by a fraction of the first shift. Reference points that stop moving are the signature of convergence.';
+    } else {
+      ro='bracket: '+num(it.d)+' ≤ δ* ≤ '+num(it.M)+' · width '+num(it.M-it.d);
+      if(prev) ro+=' · '+((prev.M-prev.d)/(it.M-it.d)).toFixed(1)+'× narrower than after k = 0';
+      cap=(k===0)
+        ? 'The alternation theorem brackets the optimum: <b>δ'+SUP[k]+' ≤ δ* ≤ max|E|</b>. Whatever the next solve returns, it lands in the shaded band — δ grows monotonically towards δ* while max|E| falls towards it.'
+        : 'Two passes in, the bracket is <b>'+((prev.M-prev.d)/(it.M-it.d)).toFixed(1)+'×</b> narrower than the dashed outline left by k = 0. Iterate until (max|E| − δ)/δ &lt; tol; in practice a few passes suffice.';
+    }
+  }
+
   dyn.innerHTML=h;
-  for(var p=0;p<pills.children.length;p++){
-    var on=(p===s), el=pills.children[p];
+  readout.textContent=ro;
+  caption.innerHTML=cap;
+  for(var p=0;p<btns.length;p++){
+    var on=(p===s), el=btns[p];
     el.style.background=on?'#FAEEDA':'var(--surface-1)';
     el.style.color=on?'#633806':'var(--text-secondary)';
     el.style.borderColor=on?'#BA7517':'var(--border)';
   }
 }
-names.forEach(function(n,i){
-  var b=document.createElement('button');
-  b.textContent=(i+1)+'. '+n;
-  b.style.cssText='padding:5px 11px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;background:var(--surface-1);color:var(--text-secondary)';
-  b.onclick=function(){ s=i; render(); };
-  pills.appendChild(b);
+
+GROUPS.forEach(function(g){
+  var lab=document.createElement('span');
+  lab.className='glab'; lab.textContent=g.label;
+  pills.appendChild(lab);
+  for(var i=g.from;i<=g.to;i++){
+    (function(idx){
+      var b=document.createElement('button');
+      b.textContent=(idx+1)+'. '+STEP[idx].name;
+      b.style.cssText='padding:5px 11px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;background:var(--surface-1);color:var(--text-secondary)';
+      b.onclick=function(){ s=idx; render(); };
+      btns[idx]=b;
+      pills.appendChild(b);
+    })(i);
+  }
 });
-document.getElementById('prev').onclick=function(){ s=(s+names.length-1)%names.length; render(); };
-document.getElementById('next').onclick=function(){ s=(s+1)%names.length; render(); };
+document.getElementById('prev').onclick=function(){ s=(s+STEP.length-1)%STEP.length; render(); };
+document.getElementById('next').onclick=function(){ s=(s+1)%STEP.length; render(); };
 render();
 })();
 </script>
+</body>
+</html>
