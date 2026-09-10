@@ -12,6 +12,7 @@ format:
       css: style.css
 resources: 
   - ./widgets/cm02_remez_lowpass_interactive_designer.html
+  - ./widgets/cm02_notch-feedback-demo.html
 lightbox: auto
 ---
 
@@ -944,6 +945,18 @@ Generally we found that poles in the vicinity of the transition bands of the fil
 
 ## Rejector filter (audio feeback) {.small-slide}
 
+
+::: {.notes}
+
+We saw before that the designed recursive filter is able to create a zero in the frequnecy response on a specific frequency
+
+In other words, it can remove a selected frequency in the signal
+
+There is an application for this, when we have a signal which is corrupted by a pure sinunoidal component: the acoustic feedback
+
+:::
+
+
 $$
   H(z) = \frac{
     (1 - e^{i 2 \pi \nu_c} z^{-1})(1 - e^{i 2 \pi \nu_c} z^{-1})
@@ -955,6 +968,10 @@ $$
 Remark: the IR will be long if $\rho \to 1$
 
 ![](images/fig21.svg){fig-align="center" width="50%"}
+
+## Rejector filter (audio feedback) - Example {.small-slide}
+
+<iframe src="widgets/cm02_notch-feedback-demo.html" width="100%" height="560" style="border:0"></iframe>
 
 ## Bilinear trasform {.blurred}
 

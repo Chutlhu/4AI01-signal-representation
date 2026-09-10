@@ -1,0 +1,16 @@
+---
+title: "4AI01 - Representation of Signal"
+subtitle: "Course materials"
+author: "Diego DI CARLO and Roland BADEAU"
+format:
+  html:
+    theme: cosmo
+    toc: false
+---
+
+## Lecture slides
+
+- [CM01 - Reminders](cm-lectures/cm01_reminders.html)
+  <br>Filtering, Z-transform, and recursive filters
+- [CM02 - Filter synthesis](cm-lectures/cm02_filter-synthesis.html)
+  <br>Design methods for FIR and IIR filters

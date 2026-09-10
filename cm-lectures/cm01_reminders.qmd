@@ -13,6 +13,7 @@ format:
 resources:
   - ./widgets/cm01_roc-explorer.html
   - ./widgets/cm01_geometric_fr.html
+  - ../notebooks/data/techno_shaman_80s-100s.wav
 
 lightbox: auto
 ---
@@ -21,9 +22,19 @@ lightbox: auto
 
 {{< include _macros.qmd >}}
 
-## Representation of signal (4AI01) {.tiny-slide}
 
-. . .
+::: {.notes}
+
+Hello everyone, and welcome to the course of Representation of signal of the second year held by professor Badeu
+
+I am Diego DI CARLO, an associate professor here at Telecom in the same team of professor Badeau
+
+who cannot be present today, so I will replace him for these 2 lectures
+
+:::
+
+
+## Representation of signals (4AI01) {.tiny-slide}
 
 This course introduces various digital signal processing tool:
 
@@ -35,33 +46,46 @@ This course introduces various digital signal processing tool:
 -  Wavelets
 
 ::: {.notes}
-Read the contents now
+
+The course introduces various digital signal processing tools that are used everyday in our computer in practice
+
+Specifically you will see the following content during the following weeks
 :::
 
 . . .
 
 These notions are related to various courses in the SPAI study track:
 
-- multirate processing and filterbank allow us to pre-process signals before applying machine learning methods
-- they find many application, incuding denoising
-- time-frequency representation are essential tools in speech processing, audio, and multimedial signal processing
+- multirate processing and filterbank allow us to *pre-process signals* before applying **machine learning** methods
+- they find many application, incuding **denoising**, **source separation** and other inverse problems
+- time-frequency representation are essential tools in **speech processing**, **audio**, and **multimedial signal processing**
 
 ::: {.notes}
-This concepts will be later fondamental
+This concepts will be later fondamental for your studies, especially the ones in the SPAI track
+
+In fact, ...
 :::
+
+## Example of STFT representation for audio {background-image="../notebooks/images/spectrogram_techo.jpg" background-size="contain" background-color="black"}
+
+[Techno Shaman by Ummet Ozcan]{.fg}
+
+<audio controls src="../notebooks/data/techno_shaman_80s-100s.wav"></audio>
+
+
 
 ## Program of the course unit {.tiny-slide}
 
 1. [Lesson *Reminders*]{.fragment fragment-index=0} [$\leftarrow$ today - 1st hour]{.fragment fragment-index=10}
-2. [Lesson *Filter synthesis*]{.fragment fragment-index=1} [$\leftarrow$ today - 2nd hour]{.fragment fragment-index=10}
+2. [Lesson *Filter synthesis*]{.fragment fragment-index=0} [$\leftarrow$ today - 2nd hour]{.fragment fragment-index=10}
 3. [Lesson *Frequency conversion*]{.fragment fragment-index=2}
-4. [Lesson *Short time Fourier transform*]{.fragment fragment-index=3}
-5. [Practical work *Frequency conversion, STFT*]{.fragment fragment-index=4}
-6. [Tutorial *Filter  synthesis*]{.fragment fragment-index=5}
-7. [Lesson + Tutorial *Filter bank*]{.fragment fragment-index=6}
-8. [Lesson *Wavelets*]{.fragment fragment-index=7}
-9. [Practical work *Wevelets*]{.fragment fragment-index=8}
-10. [Written examination]{.fragment fragment-index=9}
+4. [Lesson *Short time Fourier transform*]{.fragment fragment-index=2}
+5. [Practical work *Frequency conversion, STFT*]{.fragment fragment-index=2}
+6. [Tutorial *Filter  synthesis*]{.fragment fragment-index=2}
+7. [Lesson + Tutorial *Filter bank*]{.fragment fragment-index=2}
+8. [Lesson *Wavelets*]{.fragment fragment-index=2}
+9. [Practical work *Wevelets*]{.fragment fragment-index=2}
+10. [Written examination]{.fragment fragment-index=3 }
 
 ## Educational resources {.small-slide}
 

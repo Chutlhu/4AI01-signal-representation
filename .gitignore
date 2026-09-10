@@ -22,3 +22,6 @@ _site/
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Full-length source audio (not needed by the published site; kept local only)
+notebooks/data/*.mp3
