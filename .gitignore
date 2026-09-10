@@ -20,6 +20,9 @@ _freeze/
 *.html
 _site/
 
+# ...except hand-authored interactive widgets (source, not rendered output)
+!cm-lectures/widgets/*.html
+
 /.quarto/
 **/*.quarto_ipynb
 

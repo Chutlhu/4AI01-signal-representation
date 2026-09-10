@@ -1,0 +1,59 @@
+<div style="padding:0.5rem 0">
+<div id="pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+<svg width="100%" viewBox="0 0 680 290" role="img"><title>Remez exchange mechanism</title><desc>A caricature weighted-error curve showing the initial uniform guess, the solved polynomial equioscillating at those points, the true extrema which overshoot, the exchange step, and the resulting larger delta.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<line x1="56" y1="170" x2="650" y2="170" stroke="var(--t)" stroke-width="0.5" opacity="0.5"/>
+<text class="ts" x="48" y="174" text-anchor="end">0</text>
+<g id="dyn"></g>
+</svg>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button id="prev" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Previous</button>
+<button id="next" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Next</button>
+</div>
+</div>
+<script>
+(function(){
+var MK=[100,200,300,400,500,600], PK=MK.map(function(x){return x+25;});
+var DA=45, R=45/Math.cos(Math.PI*0.25);
+function f(x){ return R*Math.cos(Math.PI*(x-125)/100); }
+function yv(x){ return 170-f(x); }
+var names=["Initialize","Solve","Find extrema","Exchange","New δ"];
+var s=0;
+var dyn=document.getElementById('dyn'), pills=document.getElementById('pills');
+function curvePath(){ var d="M56 "+yv(56).toFixed(1); for(var x=59;x<=650;x+=3) d+=" L"+x+" "+yv(x).toFixed(1); return d; }
+function dash(y,label,col){ return '<line x1="56" y1="'+y+'" x2="650" y2="'+y+'" stroke="'+col+'" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.8"/><text class="ts" x="48" y="'+(y+4)+'" text-anchor="end">'+label+'</text>'; }
+function render(){
+  var h="";
+  if(s===0){
+    for(var i=0;i<MK.length;i++){
+      h+='<line x1="'+MK[i]+'" y1="162" x2="'+MK[i]+'" y2="178" stroke="#BA7517" stroke-width="1.5"/>';
+      h+='<text class="ts" x="'+MK[i]+'" y="196" text-anchor="middle">ν'+"₀₁₂₃₄₅"[i]+'</text>';
+    }
+  } else {
+    h+='<path d="'+curvePath()+'" fill="none" stroke="#378ADD" stroke-width="1.6"/>';
+    if(s>=1&&s<=3){ h+=dash(170-DA,"+δ⁽⁰⁾","var(--t)")+dash(170+DA,"−δ⁽⁰⁾","var(--t)"); }
+    if(s>=2){ h+=dash(170-R,(s===4?"+δ⁽¹⁾":"+max|E|"),"#BA7517")+dash(170+R,(s===4?"−δ⁽¹⁾":"−max|E|"),"#BA7517"); }
+    if(s<=3){ for(var j=0;j<MK.length;j++){ h+='<circle cx="'+MK[j]+'" cy="'+yv(MK[j]).toFixed(1)+'" r="4.5" fill="none" stroke="#378ADD" stroke-width="1.6"/>'; } }
+    if(s>=2){ for(var k=0;k<PK.length;k++){ h+='<circle cx="'+PK[k]+'" cy="'+yv(PK[k]).toFixed(1)+'" r="4.5" fill="#BA7517" stroke="none"/>'; } }
+    if(s===3){ for(var m=0;m<MK.length;m++){ var y0=yv(MK[m]), y1=yv(PK[m]); var yy=(y0<170)?Math.min(y0,y1)-14:Math.max(y0,y1)+16; h+='<line x1="'+MK[m]+'" y1="'+yy+'" x2="'+(PK[m]-3)+'" y2="'+yy+'" stroke="#BA7517" stroke-width="1.2" marker-end="url(#arrow)"/>'; } }
+  }
+  dyn.innerHTML=h;
+  for(var p=0;p<pills.children.length;p++){
+    var on=(p===s), el=pills.children[p];
+    el.style.background=on?'#FAEEDA':'var(--surface-1)';
+    el.style.color=on?'#633806':'var(--text-secondary)';
+    el.style.borderColor=on?'#BA7517':'var(--border)';
+  }
+}
+names.forEach(function(n,i){
+  var b=document.createElement('button');
+  b.textContent=(i+1)+'. '+n;
+  b.style.cssText='padding:5px 11px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;background:var(--surface-1);color:var(--text-secondary)';
+  b.onclick=function(){ s=i; render(); };
+  pills.appendChild(b);
+});
+document.getElementById('prev').onclick=function(){ s=(s+names.length-1)%names.length; render(); };
+document.getElementById('next').onclick=function(){ s=(s+1)%names.length; render(); };
+render();
+})();
+</script>

@@ -1,0 +1,147 @@
+<div style="padding:0.25rem 0">
+<div id="readout" style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;line-height:1.5"></div>
+<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+<div style="flex:3 1 400px">
+<svg width="100%" viewBox="0 0 680 300" role="img"><title>Amplitude response in decibels during Remez iterations</title><desc>Log-magnitude response of the low-pass filter with the achieved ripple bounds in red and the current alternation frequencies marked as circles.</desc><g id="plot"></g></svg>
+</div>
+<div style="flex:2 1 260px">
+<svg width="100%" viewBox="0 0 680 140" role="img"><title>Impulse response</title><desc>Stem plot of the symmetric finite impulse response of the current filter.</desc><g id="ir"></g></svg>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin:8px 0 6px;flex-wrap:wrap">
+<button id="bstep" style="padding:6px 14px;border:1px solid #BA7517;background:#FAEEDA;color:#633806;border-radius:var(--radius);cursor:pointer;font-size:13px">Iterate</button>
+<button id="brun" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Run to convergence</button>
+<button id="breset" style="padding:6px 14px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-primary);border-radius:var(--radius);cursor:pointer;font-size:13px">Reset</button>
+</div>
+<div id="ctl" style="display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center;font-size:13px;color:var(--text-secondary)"></div>
+</div>
+<script>
+(function(){
+var P={N:17,nuc:0.20,nua:0.25,K:1};
+var st={ext:null,a:null,delta:0,it:0,maxE:0,ok:false};
+var grid=[],segs=[];
+function buildGrid(){
+  grid=[];segs=[];
+  var M=(P.N-1)/2, tot=P.nuc+(0.5-P.nua);
+  var g=24*(M+2);
+  var nP=Math.max(6,Math.round(g*P.nuc/tot)), nS=Math.max(6,g-nP);
+  var s1=[],s2=[],i;
+  for(i=0;i<=nP;i++){ s1.push(grid.length); grid.push({nu:P.nuc*i/nP,D:1,W:1}); }
+  for(i=0;i<=nS;i++){ s2.push(grid.length); grid.push({nu:P.nua+(0.5-P.nua)*i/nS,D:0,W:P.K}); }
+  segs=[s1,s2];
+}
+function gauss(A,n){
+  for(var i=0;i<n;i++){
+    var p=i,r,c;
+    for(r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+    var t=A[i];A[i]=A[p];A[p]=t;
+    var pv=A[i][i]; if(Math.abs(pv)<1e-13) return null;
+    for(c=i;c<=n;c++) A[i][c]/=pv;
+    for(r=0;r<n;r++){ if(r===i) continue; var fa=A[r][i]; if(!fa) continue; for(c=i;c<=n;c++) A[r][c]-=fa*A[i][c]; }
+  }
+  return A.map(function(row){return row[n];});
+}
+function solve(){
+  var M=(P.N-1)/2,n=M+2,A=[],k,m;
+  for(k=0;k<n;k++){
+    var row=[];
+    for(m=0;m<=M;m++) row.push(Math.cos(2*Math.PI*st.ext[k].nu*m));
+    row.push((k%2?-1:1)/st.ext[k].W);
+    row.push(st.ext[k].D);
+    A.push(row);
+  }
+  var x=gauss(A,n); if(!x) return false;
+  st.a=x.slice(0,M+1); st.delta=Math.abs(x[M+1]); return true;
+}
+function HR(nu){ var s=0; for(var m=0;m<st.a.length;m++) s+=st.a[m]*Math.cos(2*Math.PI*nu*m); return s; }
+function merge(c){
+  var out=[];
+  for(var i=0;i<c.length;i++){
+    if(out.length&&(out[out.length-1].E>0)===(c[i].E>0)){ if(Math.abs(c[i].E)>Math.abs(out[out.length-1].E)) out[out.length-1]=c[i]; }
+    else out.push(c[i]);
+  }
+  return out;
+}
+function newExtrema(){
+  var E=grid.map(function(p){return p.W*(p.D-HR(p.nu));});
+  st.maxE=Math.max.apply(null,E.map(Math.abs));
+  var c=[];
+  segs.forEach(function(seg){
+    for(var j=0;j<seg.length;j++){
+      var i=seg[j],e=E[i],pv=j>0?E[seg[j-1]]:null,nx=j<seg.length-1?E[seg[j+1]]:null,ok;
+      if(pv===null) ok=(nx!==null)&&((e>0&&e>=nx)||(e<0&&e<=nx));
+      else if(nx===null) ok=((e>0&&e>=pv)||(e<0&&e<=pv));
+      else ok=(e>0&&e>=pv&&e>=nx)||(e<0&&e<=pv&&e<=nx);
+      if(ok) c.push({nu:grid[i].nu,D:grid[i].D,W:grid[i].W,E:e});
+    }
+  });
+  c=merge(c);
+  var need=(P.N-1)/2+2;
+  var guard=0;
+  while(c.length>need&&guard++<200){
+    var mi=0;
+    for(var q=1;q<c.length;q++) if(Math.abs(c[q].E)<Math.abs(c[mi].E)) mi=q;
+    if(mi===0||mi===c.length-1||c.length-2<need){
+      if(Math.abs(c[0].E)<Math.abs(c[c.length-1].E)) c.splice(0,1); else c.splice(c.length-1,1);
+    } else {
+      var j2=Math.abs(c[mi-1].E)<Math.abs(c[mi+1].E)?mi-1:mi+1;
+      c.splice(Math.min(mi,j2),2);
+    }
+    c=merge(c);
+  }
+  if(c.length>=need) st.ext=c.slice(0,need);
+}
+function reset(){
+  buildGrid();
+  var need=(P.N-1)/2+2,e=[];
+  for(var k=0;k<need;k++){ var g=grid[Math.round(k*(grid.length-1)/(need-1))]; e.push({nu:g.nu,D:g.D,W:g.W,E:0}); }
+  st.ext=e; st.it=0; st.ok=false; solve(); newExtrema0(); render();
+}
+function newExtrema0(){ var E=grid.map(function(p){return p.W*(p.D-HR(p.nu));}); st.maxE=Math.max.apply(null,E.map(Math.abs)); }
+function step(){ newExtrema(); solve(); newExtrema0(); st.it++; st.ok=(st.maxE-st.delta)/Math.max(st.delta,1e-12)<1e-3; render(); }
+var X0=56,X1=640,Y0=24,Y1=276,DB0=10,DB1=-90;
+function px(nu){ return X0+(X1-X0)*nu/0.5; }
+function py(db){ return Y0+(Y1-Y0)*(DB0-db)/(DB0-DB1); }
+function dbv(v){ return Math.max(DB1,20*Math.log10(Math.max(Math.abs(v),1e-9))); }
+function render(){
+  var h='',i;
+  h+='<rect x="'+X0+'" y="'+Y0+'" width="'+(X1-X0)+'" height="'+(Y1-Y0)+'" fill="none" stroke="var(--t)" stroke-width="0.5" opacity="0.6"/>';
+  for(var db=0;db>=-80;db-=20){ h+='<line x1="'+X0+'" y1="'+py(db).toFixed(1)+'" x2="'+X1+'" y2="'+py(db).toFixed(1)+'" stroke="var(--t)" stroke-width="0.5" opacity="0.15"/><text class="ts" x="'+(X0-8)+'" y="'+(py(db)+4).toFixed(1)+'" text-anchor="end">'+db+'</text>'; }
+  for(var t=0;t<=0.5001;t+=0.1){ h+='<text class="ts" x="'+px(t).toFixed(1)+'" y="'+(Y1+18)+'" text-anchor="middle">'+t.toFixed(1)+'</text>'; }
+  h+='<text class="ts" x="'+((X0+X1)/2)+'" y="'+(Y1+38)+'" text-anchor="middle">ν</text>';
+  var dp=st.delta, ds=st.delta/P.K;
+  h+='<line x1="'+X0+'" y1="'+py(dbv(1+dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(1+dp)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
+  h+='<line x1="'+X0+'" y1="'+py(dbv(1-dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(1-dp)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
+  h+='<line x1="'+px(P.nuc).toFixed(1)+'" y1="'+py(dbv(1-dp)).toFixed(1)+'" x2="'+px(P.nuc).toFixed(1)+'" y2="'+py(dbv(ds)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
+  h+='<line x1="'+px(P.nua).toFixed(1)+'" y1="'+py(dbv(ds)).toFixed(1)+'" x2="'+X1+'" y2="'+py(dbv(ds)).toFixed(1)+'" stroke="#E24B4A" stroke-width="1"/>';
+  var d='';
+  for(i=0;i<=900;i++){ var nu=0.5*i/900,yy=py(dbv(HR(nu))); d+=(i?' L':'M')+px(nu).toFixed(1)+' '+yy.toFixed(1); }
+  h+='<path d="'+d+'" fill="none" stroke="#378ADD" stroke-width="1.3"/>';
+  st.ext.forEach(function(e){ h+='<circle cx="'+px(e.nu).toFixed(1)+'" cy="'+py(dbv(HR(e.nu))).toFixed(1)+'" r="4.5" fill="none" stroke="#378ADD" stroke-width="1.4"/>'; });
+  document.getElementById('plot').innerHTML=h;
+  var M=(P.N-1)/2,hh=new Array(P.N);
+  hh[M]=st.a[0]; for(i=1;i<=M;i++){ hh[M-i]=st.a[i]/2; hh[M+i]=st.a[i]/2; }
+  var mx=Math.max.apply(null,hh.map(Math.abs)),s='';
+  s+='<line x1="'+X0+'" y1="80" x2="'+X1+'" y2="80" stroke="var(--t)" stroke-width="0.5" opacity="0.5"/>';
+  for(i=0;i<P.N;i++){ var xx=X0+(X1-X0)*i/(P.N-1),yy2=80-55*hh[i]/mx; s+='<line x1="'+xx.toFixed(1)+'" y1="80" x2="'+xx.toFixed(1)+'" y2="'+yy2.toFixed(1)+'" stroke="#378ADD" stroke-width="1.2"/><circle cx="'+xx.toFixed(1)+'" cy="'+yy2.toFixed(1)+'" r="3" fill="none" stroke="#378ADD" stroke-width="1.2"/>'; }
+  s+='<text class="ts" x="'+((X0+X1)/2)+'" y="128" text-anchor="middle">h(n),  n = 0 … '+(P.N-1)+'</text>';
+  document.getElementById('ir').innerHTML=s;
+  document.getElementById('readout').innerHTML='Iteration '+st.it+' &nbsp;·&nbsp; M+2 = '+((P.N-1)/2+2)+' alternations &nbsp;·&nbsp; δ = '+st.delta.toFixed(5)+' &nbsp;·&nbsp; max|E| = '+st.maxE.toFixed(5)+'<br>passband ripple '+dbv(1+dp).toFixed(2)+' dB &nbsp;·&nbsp; stopband '+dbv(ds).toFixed(1)+' dB &nbsp;·&nbsp; '+(st.ok?'converged':'gap '+(st.maxE-st.delta).toFixed(5));
+}
+function slider(label,key,min,max,stp,fmt){
+  var c=document.getElementById('ctl');
+  var l=document.createElement('span'); l.textContent=label; c.appendChild(l);
+  var r=document.createElement('input'); r.type='range'; r.min=min; r.max=max; r.step=stp; r.value=P[key]; c.appendChild(r);
+  var v=document.createElement('span'); v.style.minWidth='44px'; v.style.textAlign='right'; v.textContent=fmt(P[key]); c.appendChild(v);
+  r.oninput=function(){ P[key]=parseFloat(r.value); if(P.nua<=P.nuc+0.01){ if(key==='nuc') P.nuc=P.nua-0.01; else P.nua=P.nuc+0.01; } v.textContent=fmt(P[key]); reset(); };
+}
+slider('Length N','N',9,41,2,function(x){return x;});
+slider('ν_c','nuc',0.05,0.40,0.01,function(x){return x.toFixed(2);});
+slider('ν_a','nua',0.10,0.48,0.01,function(x){return x.toFixed(2);});
+slider('δ₁/δ₂','K',0.2,20,0.2,function(x){return x.toFixed(1);});
+document.getElementById('bstep').onclick=function(){ step(); };
+document.getElementById('brun').onclick=function(){ for(var i=0;i<12&&!st.ok;i++) step(); };
+document.getElementById('breset').onclick=function(){ reset(); };
+reset();
+})();
+</script>
