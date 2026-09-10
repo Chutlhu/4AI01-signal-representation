@@ -8,25 +8,26 @@ date: last-modified
 format:
     dtslides-revealjs:
       slide-number: c/t
-      footer: "2026-2026 / 4AI01 - Signal Representation / Filter synthesis"
+      footer: "2026-2027 / 4AI01 - Signal Representation / Filter synthesis"
       css: style.css
 resources: 
+  - ./widgets/cm02_remez_exchange_mechanism_stepper.html
   - ./widgets/cm02_remez_lowpass_interactive_designer.html
   - ./widgets/cm02_notch-feedback-demo.html
 lightbox: auto
 ---
 
-# Part I - Linear phase FIR filters {.section-silde}
+# Part I - Linear phase FIR filters {.section-slide}
 
 {{< include _macros.qmd >}}
 
 ::: {.notes}
 
-In this lesson we will study of to design filters
+In this lesson we will study how to design filters
 
-So we can choose between two type of filters: recursive (that may have infinite impulse response) and FIR filters
+So we can choose between two types of filters: recursive (that may have infinite impulse response) and FIR filters
 
-Let s start with the FIR filters.
+Let's start with the FIR filters.
 
 :::
 
@@ -42,11 +43,11 @@ $$H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$$
 
 ::: {.notes}
 
-The impulse response of a FIR is composed bit a finite number of $N$ of non-zeros coefficients.
+The impulse response of a FIR filter is composed of a finite number $N$ of non-zero coefficients.
 
 We assume here the case of **real and causal**
 
-Then, the frequency response can be factorized in a real continuos function $H_R$ multiplying a complex **linear phase component** of the continuous variable $\nu$.
+Then, the frequency response can be factorized in a real continuous function $H_R$ multiplying a complex **linear phase component** of the continuous variable $\nu$.
 
 :::
 
@@ -57,13 +58,13 @@ Constant and equal group and phase delays (if $\beta = 0$)
 
 ::: {.notes}
 
-THe main advantage of these filters is that the phase delay is constant with the frequency
+The main advantage of these filters is that the phase delay is constant with the frequency
 
-If the input signal has its frequency support in the passband, then the waveform of the output is similar to the one the input: 
+If the input signal has its frequency support in the passband, then the waveform of the output is similar to the one of the input: 
 
 - the components are processed without getting out of phase with one another
 
-Let s verify this, derivation on the whiteboard
+Let's verify this, derivation on the whiteboard
 
 :::
 
@@ -73,7 +74,7 @@ Let s verify this, derivation on the whiteboard
 [Advantages:]{.fg}
 
 - always **causal and stable**
-- preserve the waveform af a narrow-band signal (if $\beta = 0$)
+- preserve the waveform of a narrow-band signal (if $\beta = 0$)
 
 [Drawbacks:]{.fg} high computational complexity
 
@@ -81,15 +82,15 @@ Let s verify this, derivation on the whiteboard
 ::: {.notes}
 
 The main advantage of the FIR filters is 
-- the possibility of synthetize them with exact linear phase in frequency, 
+- the possibility of synthesizing them with exact linear phase in frequency, 
 - allowing the conservation of the filtered waveforms
 
-However, they require often a computational complexity much greater than the recursive filter for the same function
+However, they often require a computational complexity much greater than recursive filters for the same function
 
 Also, FIR filters have smaller sensitivity to rounding errors, due to their non-recursive nature.
 
-- meaning that these error do not propagate. 
-- In the case of FIR filter instead, error due to finite precision may propagate and causes instabilities if the poles are near the unit circle
+- meaning that these errors do not propagate. 
+- In the case of recursive filters instead, errors due to finite precision may propagate and cause instabilities if the poles are near the unit circle
 
 :::
 
@@ -102,7 +103,7 @@ $$H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$$
 
 To find the shape of the impulse response of this type of filters, we will use two properties
 
-- The first one is the 1-periodicity of the tranfer function, that leads to know that the $H_R$ components is 2-periodic
+- The first one is the 1-periodicity of the transfer function, which tells us that the $H_R$ component is 2-periodic
 - and the Hermitian symmetry of the transfer function implies that $H_R$ is even or odd
 
 :::
@@ -118,12 +119,12 @@ Then, we can define $G(\eipiv)= d H_R(2 \nu)$ where $g(n)$ is real, even or odd
 
 We can thus write $H(z^2) = z^{-p} G(z)\quad$ (filter of length $2N-1$)
 
-We choose $p = N -1$ for a  causal filter
+We choose $p = N -1$ for a causal filter
 
 
 ::: {.notes}
 
-Then we can define a transfer function of the filter $G$ than is 2 periodic of $H_R$ and multiplied by 1 or $i$.
+Then we can define a transfer function of the filter $G$ that is the 2-periodic version of $H_R$, multiplied by 1 or $i$.
 
 This implies that the impulse response will be real, even or odd
 
@@ -131,7 +132,7 @@ Then we can see that taking the impulse response $g(n)$,
 
 - delaying it by an offset of $p$ samples
 - and multiplying by $d$ (one or $i$)
-- we obtained an inteporalted version of the filter $h(n)$
+- we obtain an interpolated version of the filter $h(n)$
 
 :::
 
@@ -151,9 +152,9 @@ Then we have 4 possibilities:
 - two for the choice of the $d$, either 1 or $i$
 - two for the parity of $N$, either odd or even
 
-This lead to FIR filters that exhibit porperties which make it suitable for specific uses.
+This leads to FIR filters that exhibit properties which make them suitable for specific uses.
 
-Note that, $H_R$ is what is left to the engineer to optimize, while the phase is constarted by the FIR design.
+Note that $H_R$ is what is left to the engineer to optimize, while the phase is constrained by the FIR design.
 
 For instance if we want to design different passband filters
 
@@ -166,7 +167,7 @@ For instance if we want to design different passband filters
 
 ::: {.notes}
 
-We have the Type I and Type filters that 
+We have the Type I and Type II filters that 
 
 :::
 
@@ -209,7 +210,7 @@ $N$ even, symmetric ($d=1$)
 
 ::: {.small}
 $$
-H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} b_n \cos\left(2\pi \nu \left(n - \frac12\right)\right)
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=1}^{\frac{N}{2}} b_n \cos\left(2\pi \nu \left(n - \frac12\right)\right)
 $$
 ::: 
 
@@ -241,7 +242,7 @@ Use: low-pass, band-pass
 $N$ odd, anti-symmetric ($d=i$)
 
 $$
-H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} c_n \sin (2 \pi \nu n)
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=1}^{\frac{N-1}{2}} c_n \sin (2 \pi \nu n)
 $$
 
 Property:
@@ -252,7 +253,7 @@ $$
 Use: 
 
   - Differentiator: $H(f)=i 2 \pi f$
-  - Hilber transform: $H(f)= - i \sign(f)$ in bass-pass form
+  - Hilbert transform: $H(f)= - i \sign(f)$ in band-pass form
 
 :::
 
@@ -276,16 +277,16 @@ $N$ even, anti-symmetric ($d=i$)
 
 ::: {.small}
 $$
-H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=0}^{\frac{N-1}{2}} d_n \cos\left(2\pi \nu \left(n - \frac12\right)\right)
+H(\eipiv) = e^{- i 2 \pi \nu \frac{N-1}{2}} \sum_{n=1}^{\frac{N}{2}} d_n \sin\left(2\pi \nu \left(n - \frac12\right)\right)
 $$
 :::
 
-Property: $H(1)=H(-1)=0 \quad (\nu=0 \text{ or } \frac12)$
+Property: $H(1)=0 \quad (\nu=0)$
 
 Use: 
 
   - Differentiator: $H(f)=i 2 \pi f$
-  - Hilber transform: $H(f)= - i \sign(f)$ in high-pass form
+  - Hilbert transform: $H(f)= - i \sign(f)$ in high-pass form
 
 :::
 
@@ -302,23 +303,23 @@ Use:
 :::
 
 
-## Differentiatiors {.small}
+## Differentiators {.small-slide}
 
 
 ::: {.notes}
 
 We will now see two special filters that we mentioned before.
 
-The first one are differientiation filters
+The first ones are differentiation filters
 
 Filters type III and IV can be used to approximate the frequency response $H(\eipiv)=i 2 \pi \nu$, which corresponds to the derivation operation
 
-Thefore we can use one of the previus filter with $d=1$
+Therefore we can use one of the previous filters with $d=i$
 
 :::
 
 $$
-  d=1 \quad\implies\quad H(\eipiv)= i 2 \pi \nu
+  d=i \quad\implies\quad H(\eipiv)= i 2 \pi \nu
 $$
 
 . . .
@@ -334,34 +335,34 @@ Differentiator filter of order 20 applied to a triangle sequence
 
 In practice, we need to correct the delay related to the filtering
 
-This filters features a zero in the frequency response at $\nu=0.5$, resulting to the highest frequency of the passband is fixed ad $\nu=0.45$
+These filters feature a zero in the frequency response at $\nu=0.5$, so the highest frequency of the passband is fixed at $\nu=0.45$
 
 Also, as you can notice, the Gibbs phenomenon is evident in the transition of the square sequence
 :::
 
 
-## Hilbert tranform {.small-slide}
+## Hilbert transform {.small-slide}
 
 ::: {.notes}
 
-These filters perform an approximation of the Hibert tranform, which give access to the analytic signal.
+These filters perform an approximation of the Hilbert transform, which gives access to the analytic signal.
 
 An analytic signal is the complex signal associated with a real signal, 
 
-- that have not negative frequency components
-- and whose the real and imaginary part of this signal are real functions related via Hilbert transform
+- that has no negative frequency components
+- and whose real and imaginary parts are real functions related via the Hilbert transform
 
-We can use the filters Type III and Type IV to extract it because the frequency response contains the phase factor $e^(i \pi / 2)$ 
+We can use the filters Type III and Type IV to extract it because the frequency response contains the phase factor $e^{i \pi / 2}$ 
 
 Then filtering a real signal $x(n)$ provides a signal $x_h(n)$ such that 
 $$
-  x_a(n) = x(n) + j x_h(h), \quad x_h(n) = \{h \ast x\}(n)
+  x_a(n) = x(n) + i x_h(n), \quad x_h(n) = \{h \ast x\}(n)
 $$
 
 :::
 
 $$
-x_a(n) = x(n) + i x_h(h), \quad x_h(n) = \{h \ast x\}(n)
+x_a(n) = x(n) + i x_h(n), \quad x_h(n) = \{h \ast x\}(n)
 $$
 
 . . .
@@ -372,7 +373,7 @@ $$
 <!-- ![](./images/fig29.svg){fig-align="center"} -->
 
 ::: {.center .small}
-Hilbert filtering of sinusoidal sequence $x(n)$ of freq. $\nu_0=0.05$, filter lenght $N=61$
+Hilbert filtering of sinusoidal sequence $x(n)$ of freq. $\nu_0=0.05$, filter length $N=61$
 :::
 
 <!-- ::: -->
@@ -382,11 +383,11 @@ Hilbert filtering of sinusoidal sequence $x(n)$ of freq. $\nu_0=0.05$, filter le
 
 This figure here shows the results and the frequency response of the Hilbert filter implementing a passband filter:
 
-This means that we perform the hilbert transform in that selected frequencies
+This means that we perform the Hilbert transform on the selected frequencies
 
-In reality, the filter has a transition state and the steady state is reached only after the filter lenght samples - 1, because of the ripples in the passband
+In reality, the filter has a transient state and the steady state is reached only after $N-1$ samples, because of the ripples in the passband
 
-THis imperfections are hardly visibile becasue of the choosen order of the filter here.
+These imperfections are hardly visible because of the chosen order of the filter here.
 
 :::
 
@@ -407,19 +408,19 @@ $$
 
 ::: {.notes}
 
-Let be $\rho$ a zero of $H(z)$
+Let $\rho$ be a zero of $H(z)$
 
-Since $h(n)$ is real, then also ${\rho^\ast}$ is a zeros of $H(z)$
+Since $h(n)$ is real, then also ${\rho^\ast}$ is a zero of $H(z)$
 
-If $\rho\ne 0$, $h(n)$ is either symmetric or anti-symmetric, and also $1/\rho$ and $1/{\rho^\ast}$ are zeros of $H(z)$
+Since $h(n)$ is either symmetric or anti-symmetric, if $\rho\ne 0$ then also $1/\rho$ and $1/{\rho^\ast}$ are zeros of $H(z)$
 
 We can easily prove it
 
 $$
-H(\frac{1}{\rho}) 
-  = \sum_{n=0}^{N-1} h(n)(\frac{1}{\rho})^(-n)
-  = \sum_{m=0}^{N-1} h(N - 1 - m)(\frac{1}{\rho})^(N+1-m)
-  = \rho^{N-1}\sum_{m=0}^{N-1} h(m)(\frac{1}{\rho})^(-m)
+H\left(\frac{1}{\rho}\right)
+  = \sum_{n=0}^{N-1} h(n)\,\rho^{n}
+  = \sum_{m=0}^{N-1} h(N - 1 - m)\,\rho^{N-1-m}
+  = \pm\,\rho^{N-1}\sum_{m=0}^{N-1} h(m)\,\rho^{-m}
   = \pm \rho^{N-1} H(\rho)
 $$
 for $m = N - 1 - n$
@@ -497,7 +498,7 @@ anti-sym.
 $H(1)=H(-1) = 0$
 
 Differentiator\
-Hilber Transform\
+Hilbert transform\
 Band-pass
 
 :::
@@ -510,23 +511,23 @@ anti-sym.
 
 ![](images/fig37.svg)
 
-$H(1)- = 0$
+$H(1) = 0$
 
 Differentiator\
-Hilber Transform\
+Hilbert transform\
 High-pass
 
 :::
 
-# Part II - FIR filters: iterative methods {.slide-section}
+# Part II - FIR filters: iterative methods {.section-slide}
 
 ::: {.notes}
 
-These methods consists in defyining some properties of the desired filters
+These methods consist in defining some properties of the desired filters
 
-and optimiza a criterion, called the Chebyshev error criterion, to estimate the filter parameter.
+and optimize a criterion, called the Chebyshev error criterion, to estimate the filter parameters.
 
-The criterion is met using iterative like the Remez's exchange algorithm
+The criterion is optimized using iterative algorithms like the Remez exchange algorithm
 
 :::
 
@@ -542,21 +543,21 @@ The criterion is met using iterative like the Remez's exchange algorithm
 
 ::: {.notes}
 
-The iteravite methods benefits of the following advantages
+The iterative methods benefit from the following advantages
 
-- the achive a optimal design, in term of error variance and global minimum
+- they achieve an optimal design, in terms of error variance and global minimum
 - are relatively flexible thanks to the template to define the shape of a filter
-- they guarantees ripple of constant amplitudes
-- and return the minimun order filter for the given template
+- they guarantee ripples of constant amplitude
+- and return the minimum order filter for the given template
 :::
 
 . . .
 
 [Drawbacks]{.fg}
 
-- Computational demanding **synthesis**
+- Computationally demanding **synthesis**
 - Not suitable for real-time processing
-- Not suitable for long filters ($\to$ numerically stability issues)
+- Not suitable for long filters ($\to$ numerical stability issues)
 
 
 ::: {.notes}
@@ -565,9 +566,9 @@ Of course there is no free lunch
 
 The drawbacks are that
 
-- the sythesis is computationally demanding (that is, computing the filter)
-- therefor they are not suitable for real-time processing
-- and suffer for numerical insatbility for high-order filters
+- the synthesis is computationally demanding (that is, computing the filter)
+- therefore they are not suitable for real-time processing
+- and suffer from numerical instability for high-order filters
 
 :::
 
@@ -577,7 +578,7 @@ The drawbacks are that
 
 ::: {.notes}
 
-Let s start with the defitinion of the filter template
+Let's start with the definition of the filter template
 
 that is the parameterization of the shape of the desired filter
 
@@ -588,7 +589,7 @@ that is the parameterization of the shape of the desired filter
 ::: {.notes .small}
 - that is, specifying the maximum allowable limits for the modulus of its frequency response
 
-For instance, let s consider here a low-pass filter, which will be easy to generalize to other types of filter later
+For instance, let's consider here a low-pass filter, which will be easy to generalize to other types of filter later
 
 - the limits of the modulus of the frequency response are given in terms of 
   - maximum ripple $\delta_1$ in the passband 
@@ -600,7 +601,7 @@ The width of the transition band which will be very narrow for a more selective 
 
 - defined between two frequencies $\nu_c$ and $\nu_a$
 
-This template assume typically unitary gain and are normalized to 1 in the passband
+This template typically assumes a unitary gain and is normalized to 1 in the passband
 
 :::
 
@@ -644,14 +645,14 @@ $$
 
 ::: {.small}
 $$  
-  \boxed{P(\nu) = \sum_{n=0}^M a_n \cos(2 \pi \nu)}
+  \boxed{P(\nu) = \sum_{n=0}^M a_n \cos(2 \pi \nu n)}
 $$
 :::
 
 
 ::: {.notes}
 
-and the P are trigonometric polynomial function whose general expression is common to all the filters
+and the $P$ are trigonometric polynomial functions whose general expression is common to all the filters
 
 :::
 
@@ -671,10 +672,10 @@ with $N$, $\nu_c$, and $\nu_a$ fixed and $W(\nu) \ge 0$
 
 Now that we have a general shapes for the filters, we can define the Remez method.
 
-We want to optimizaze a FIR filter of length $N$ whose frequency response is given by 
+We want to optimize a FIR filter of length $N$ whose frequency response is given by 
 $$ H(\eipiv) = e^{- i 2 \pi \nu \frac{N - 1}{2}} H_R(\nu)$$
 
-The optimization criterio is based on the error which
+The optimization criterion is based on the error which
 
 - measure the deviation between the zero-phase part of the obtained responses and the ideal function
 
@@ -689,10 +690,10 @@ The optimization criterio is based on the error which
 
 ::: {.notes}
 
-The positive  function $W$ weights the error according to the frequencies, for instance
+The positive function $W$ weights the error according to the frequencies, for instance
 
-- 1 over $\delta_1$ in the stop band
 - 1 over $\delta_1$ in the pass band
+- 1 over $\delta_2$ in the stop band
 - 0 in the transition band
 
 :::
@@ -715,7 +716,7 @@ $$
 
 With the factorization of H_R into P and Q we get this expression for the error
 
-where we can define $W'= W Q$ and $D' = D / Q$ by consider Q implicitely
+where we can define $W'= W Q$ and $H'_D = H_D / Q$, considering $Q$ implicitly
 
 :::
 
@@ -733,7 +734,7 @@ on a closed set of frequencies $B$
 
 Then the problem is: we are looking for the filter
 
-- whose frequency response minimizes the infinite norm (that is the maximum error) of the weigthed Chebyshev error
+- whose frequency response minimizes the infinity norm (that is the maximum error) of the weighted Chebyshev error
 - on a frequency band B
 
 :::
@@ -767,14 +768,14 @@ and where it does, it does with alternating sign.
 
 ::: {.notes}
 
-So the error have an equi-ripple behaviour, as shown here
+So the error has an equi-ripple behaviour, as shown here
 
 But consider that:
 
 - it is the weighted error to be equiripple, so then the ripples are $\delta \delta_1$ in the passband and $\delta \delta_2$ in the stopband
 - M+2 is shared across the passband and the stop band
-- $H_R$ is real, not positives, so it oscillate through zero
-  - sometimes this is not evident when plotting the magnitude if the filter $H$
+- $H_R$ is real, not positive, so it oscillates through zero
+  - sometimes this is not evident when plotting the magnitude of the filter $H$
 
 :::
 
@@ -784,9 +785,9 @@ But consider that:
 
 ::: {.notes}
 
-Then the Remez exchange algorithm empirically search for a solution.
+Then the Remez exchange algorithm empirically searches for a solution.
 
-While there is not a proof of converges, it typically converges in a few iteration
+While there is no proof of convergence, it typically converges in a few iterations
 
 :::
 
@@ -809,10 +810,10 @@ So as input we have ...
 
 . . .
 
-1. Initialization: the $M+2$  alternances are set uniformely in $B$
+1. Initialization: the $M+2$ alternances are set uniformly in $B$
 2. Iteration
-    1. Direct resolution of the linear system $\sum_{k=0}^{M} a_k \cos(2 \pi \nu_k n) + \frac{(-1)^k \delta}{W(\nu_k)} = H_D(\nu_k)$\
-      (or solution by Lagrangian interpolation)
+    1. Direct resolution of the linear system $\sum_{n=0}^{M} a_n \cos(2 \pi \nu_k n) + \frac{(-1)^k \delta}{W(\nu_k)} = H_D(\nu_k)$\
+      (or solution by Lagrange interpolation)
     2. Search of the extrema of this polynomial
     3. Choice of the new values of the $\nu_k$
 3. Convergence in a few iterations
@@ -821,23 +822,23 @@ So as input we have ...
 
 Then for the actual algorithms
 
-1. In the initialization we spread $M+2$ candidates frequencies uniformely over the band B
-2. Then solve a linear system evaluating the polinomial at the candidare frequencies with respect the coefficient $a_k$
+1. In the initialization we spread $M+2$ candidate frequencies uniformly over the band $B$
+2. Then solve a linear system evaluating the polynomial at the candidate frequencies with respect to the coefficients $a_k$
 3. evaluate the error function on the dense grid of frequencies and compute maximum error
 4. Take the new values of candidate frequencies that maximize the error
-5. Stop when the max error falls under a tollerance
+5. Stop when the max error falls under a tolerance
 
-The final filter impulse response $h(n)$ is recovered by $a_k$ and symmetry relation
+The final filter impulse response $h(n)$ is recovered from the $a_k$ and the symmetry relation
 
 :::
 
 ## Remez method - illustration
 
-<iframe class="r-stretch" src="widgets/cm2_remez_exchange_mechanism_stepper.html" width="100%"
+<iframe class="r-stretch" src="widgets/cm02_remez_exchange_mechanism_stepper.html" width="100%"
         style="border:none;" loading="lazy"></iframe>
 
 
-## Remez methods - example low pass filter
+## Remez method - example low-pass filter
 
 <iframe class="r-stretch" src="widgets/cm02_remez_lowpass_interactive_designer.html" width="100%"
         style="border:none;" loading="lazy"></iframe>
@@ -853,7 +854,7 @@ The final filter impulse response $h(n)$ is recovered by $a_k$ and symmetry rela
 
 ::: -->
 
-# Part III - Eigenvalues methods
+# Part III - Eigenvalue methods {.section-slide}
 
 Window optimization under constraint
 
@@ -867,14 +868,13 @@ Skip $\to$ part of the first tutorial
 
 Skip $\to$ part of the first tutorial
 
-# Part IV - Synthesis of recursive filters
-
+# Part IV - Synthesis of recursive filters {.section-slide}
 
 ::: {.notes}
 
 In this second part, we will study recursive filters
 
-We will see only the general ideas, as professor Badeau will present them more in details later in the course
+We will see only the general ideas, as professor Badeau will present them more in detail later in the course
 
 :::
 
@@ -884,7 +884,7 @@ We will see only the general ideas, as professor Badeau will present them more i
 
 ::: {.notes}
 
-Let s start with 2 examples
+Let's start with 2 examples
 
 :::
 
@@ -898,11 +898,11 @@ $N(z) = \prod_k (1 - z_k z^{-1})$ with zeros at frequencies $[0.1, 0.2, 0.3, 0.4
 
 ::: {.notes}
 
-This example shows the frequency response of a filter with zeros at the normalized frequencies 0.1, 0.2, 0.3, 0.4 and 0.5 (and they conjugates)
+This example shows the frequency response of a filter with zeros at the normalized frequencies 0.1, 0.2, 0.3, 0.4 and 0.5 (and their conjugates)
 
-The filter has a zero on the unit circle, and its freequecies response present a cancellation at $\nu_k$
+The filter has a zero on the unit circle, and its frequency response presents a cancellation at $\nu_k$
 
-We can leverage this fact to stop bands by setting the $\nu_k$ in the stopband
+We can leverage this fact to create stopbands by setting the $\nu_k$ in the stopband
 
 However the response is not flat in the passband
 
@@ -913,18 +913,18 @@ However the response is not flat in the passband
 
 [Example]{.fg}
 
-$N(z) =N(z)/D(z)$ where $D(z)=(1 - p z^{-1})(1 - p^\ast z^{-1})$, with $p = 0.95 e^{i 2 \pi 0.085}$
+$H(z) = N(z)/D(z)$ where $D(z)=(1 - p z^{-1})(1 - p^\ast z^{-1})$, with $p = 0.95 e^{i 2 \pi 0.085}$
 
 ![](images/fig66.svg){width="60%" fig-align="center"}
 
 
 ::: {.notes}
 
-To overcome this we can add a pole to the filter, by dividing it, so that the modulus of the denominator approximate the one of the numerator (in the passband)
+To overcome this we can add a pole to the filter, by dividing it, so that the modulus of the denominator approximates the one of the numerator (in the passband)
 
-For instance we can choose the denominator with 2 conjugate poles and if they are smaller than 1 we get a causal filter
+For instance we can choose the denominator with 2 conjugate poles, and if their modulus is smaller than 1 we get a stable causal filter
 
-Then by bulding the filter like this ratio, we can see that we obtain a flattening of the passband - but a non-linear phase in the neightborhood of $\nu=0.1$, which is the frequency of the pole
+Then by building the filter as this ratio, we can see that we obtain a flattening of the passband - but a non-linear phase in the neighborhood of $\nu=0.085$, which is the frequency of the pole
 
 :::
 
@@ -938,30 +938,30 @@ Position of the poles and zeros
 
 ::: {.notes}
 
-Generally we found that poles in the vicinity of the transition bands of the filters and the cutoff will be even more selective that the poles are close to the unit circle.
+Generally we find the poles in the vicinity of the transition band of the filter, and the cutoff will be even more selective the closer the poles are to the unit circle.
 
 :::
 
 
-## Rejector filter (audio feeback) {.small-slide}
+## Rejector filter (audio feedback) {.small-slide}
 
 
 ::: {.notes}
 
-We saw before that the designed recursive filter is able to create a zero in the frequnecy response on a specific frequency
+We saw before that the designed recursive filter is able to create a zero in the frequency response at a specific frequency
 
 In other words, it can remove a selected frequency in the signal
 
-There is an application for this, when we have a signal which is corrupted by a pure sinunoidal component: the acoustic feedback
+There is an application for this, when we have a signal which is corrupted by a pure sinusoidal component: the acoustic feedback
 
 :::
 
 
 $$
   H(z) = \frac{
-    (1 - e^{i 2 \pi \nu_c} z^{-1})(1 - e^{i 2 \pi \nu_c} z^{-1})
+    (1 - e^{i 2 \pi \nu_c} z^{-1})(1 - e^{- i 2 \pi \nu_c} z^{-1})
   }{
-    (1 - \rho e^{i 2 \pi \nu_c} z^{-1})(1 + \rho e^{i 2 \pi \nu_c} z^{-1})
+    (1 - \rho e^{i 2 \pi \nu_c} z^{-1})(1 - \rho e^{- i 2 \pi \nu_c} z^{-1})
   }
 $$
 
@@ -973,7 +973,7 @@ Remark: the IR will be long if $\rho \to 1$
 
 <iframe src="widgets/cm02_notch-feedback-demo.html" width="100%" height="560" style="border:0"></iframe>
 
-## Bilinear trasform {.blurred}
+## Bilinear transform {.blurred}
 
 ## Bilinear transform {.blurred}
 
