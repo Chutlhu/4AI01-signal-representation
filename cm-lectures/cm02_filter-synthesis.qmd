@@ -70,6 +70,30 @@ Meaning that, if the input signal has its frequency support in the passband, the
 
 **!!!Let's verify this!!!**
 
+1. Let s assume that $X(\eipiv)$ and $H(\eipiv)$ are summable in the interval $[-0.5, 0.5]$
+  $$
+    X(\eipiv), H(\eipiv) \in L^1[-0.5, 0.5]
+  $$
+2. In this interval, the support for $X$ reduces to a compact set $B \subset [-0.5, 0.5]$ where
+  $$
+    | H(\eipiv) | = 1 \quad \forall \nu \in B
+  $$
+3. Then, $\forall \nu \in B$, $H_R(\eipiv) = c$ where $c = \pm 1$
+4. The output sequence of the filter becomes, for some $\alpha \in \RR$, $\beta \in [0, 0.5]$
+  $$
+    y(n) = c e^{i 2 \pi \beta} \int_{B} X(\eipiv) e^{i 2 \pi \nu (n - \alpha)} d\nu
+  $$
+5. We can now define the continuous time signal $x_a(t)$ such that $x(n)$ is obtained by sampling $x_a$ at rate 1
+6. By using the interpolation formula 
+  $$
+    x_a(t) = \sum_\ZZ x(n) \sinc(t - n)
+  $$
+7. The existence of $x_a$ is assured because its Fourier transform is $X_a(\nu) = X(\eipiv)$, $\nu \in [-0.5, 0.5]$ and $X_a(\nu) = 0$ elsewhere
+8. Finally, from the definition of $y(n)$, we obtain
+   $$
+    y(n) = c e^{i 2 \pi \beta} x_a(n - \alpha)
+   $$
+
 :::
 
 
@@ -100,7 +124,9 @@ Also, FIR filters have smaller sensitivity to rounding errors, due to their non-
 
 ## Characterization {.tiny-slide}
 
-$$H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$$
+$$
+  H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)
+$$
 
 ::: {.notes}
 
@@ -111,12 +137,20 @@ To find the shape of the impulse response of this type of filters, we will use t
 
 **!!!Let's verify this!!!**
 
+0. Knowing that $H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$
+1. 1-periodic means that $H(\eipiv) = H(e^{i 2 \pi (\nu + 1)})$, then
+  $$
+    H_R(\nu) = e^{- i 2 \pi \alpha} H_R(\nu + 1)
+  $$
+2. then, since $H_R$ is real, then $\alpha$ must be an half-integer
+3. then we have $H_R(\nu + 1) = (-1)^p H_R(\nu)$, meaning the $H_R$ is 2-periodic
+
 :::
 
 [Properties]{.fg}
 
 - **1-periodicity** of $H(\eipiv) \implies \alpha = p/2, p\in \ZZ$ $\implies$ $H_R$ is "2-periodic" (to be proved)
-- **Hermitian symmetry** $\implies$ $d = e^{2 i \pi \beta}=1$ or $i$ $\implies$ $H_R$ is even or odd (to be proved)
+- **Hermitian symmetry** $\implies$ $d = e^{2 i \pi \beta}=1$ or $i$ $\implies$ $H_R$ is even or odd (well known)
 
 . . .
 
@@ -409,25 +443,29 @@ $$
 
 ::: {.notes}
 
-These filters have a properties related to the position of the zeros
+These filters have a nice property related to the position of the zeros
 
-Let $\rho$ be a zero of $H(z)$
+That is, if $\rho$ is a zero of $H(z)$, 
+- then also $\rho^\ast$, $1/\rho$, $1/\rho^\ast$ are zeros of this filter
 
-Since $h(n)$ is real, then also ${\rho^\ast}$ is a zero of $H(z)$
+**!!!Let's verify this!!!**
 
-Since $h(n)$ is either symmetric or anti-symmetric, if $\rho\ne 0$ then also $1/\rho$ and $1/{\rho^\ast}$ are zeros of $H(z)$
-
-We can easily prove it by
+1. Let $\rho$ be a zero of $H(z)$
+2. Since $h(n)$ is real, then also ${\rho^\ast}$ is a zero of $H(z)$
+3. Since $h(n)$ is either symmetric or anti-symmetric, 
 $$
+\begin{align}
 H\left(\frac{1}{\rho}\right)
-  = \sum_{n=0}^{N-1} h(n)\,\rho^{n}
-  = \sum_{m=0}^{N-1} h(N - 1 - m)\,\rho^{N-1-m}
-  = \pm\,\rho^{N-1}\sum_{m=0}^{N-1} h(m)\,\rho^{-m}
-  = \pm \rho^{N-1} H(\rho)
+  &= \sum_{n=0}^{N-1} h(n)\,\rho^{n} \text{ by definition} \\
+  &= \sum_{m=0}^{N-1} h(N - 1 - m)\,\rho^{N-1-m} \quad \text{ index reversal / read sum backward}\\
+  &= \pm\,\rho^{N-1}\sum_{m=0}^{N-1} h(m)\,\rho^{-m} \quad \text{ anti/symmetry} h(N - 1 - m) = \pm h(m)\\
+  &= \pm\,\rho^{N-1} H(\rho) \quad \text{ factor out } \rho^{N-1} \\
+  &= 0
+\end{align}
 $$
 for $m = N - 1 - n$
 
-This means that for these type of filters, one zero is always accompained by four of them.
+if $\rho\ne 0$ then also $1/\rho$ and $1/{\rho^\ast}$ are zeros of $H(z)$
 :::
 
 ## Position of the zeros
@@ -997,7 +1035,7 @@ Remark: the IR will be long if $\rho \to 1$
 
 ## Rejector filter (audio feedback) - Example {.small-slide}
 
-<iframe src="widgets/cm02_notch-feedback-demo.html" width="100%" height="100%" style="border:0"></iframe>
+<iframe src="widgets/cm02_notch-feedback-demo.html" width="100%" height="100% " style="border:0"></iframe>
 
 ## Bilinear transform {.blurred}
 

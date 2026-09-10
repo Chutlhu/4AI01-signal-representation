@@ -285,6 +285,7 @@ Beyond linearity and invariance to translation over time, we usually expect a fi
 
 ::: {.notes}
 Then
+
 - An ideal band-pass filter is characterized by two parameters, a **central frequency** $\nu_0$ and a **bandwidth** of $2\nu_c$. 
 - A band-pass can be built by the differences of 2 low-pass filters and its impulse response can be easily computed in closed-form resulting in a modulated sinus cardinal
 - Again, this impulse response is continuous and infinite
@@ -372,7 +373,7 @@ $$
 
 . . .
 
-Frequency response in the neighborhood of $\nu_0$ (proof in the notes):
+Frequency response in the neighborhood of $\nu_0$:
 
 $$
   H(\eipiv) \simeq H_R(\nu_0) e^{- i 2 \pi (\nu_0 \taup(\nu_0) + (\nu - \nu_0) \taug(\nu_0))}
@@ -384,6 +385,16 @@ $$
 - And it is easy to see by developing the Taylor expansion
 
 **!!! Let's prove it!!!**
+
+Let's expand the frequency response $H(\eipiv)$ around $\nu_0$ with the first-order Taylor expansion of the phase and zero-order Taylor expansion of the amplitude
+
+$$
+\begin{align}
+  H(\eipiv) 
+    &\simeq H_R(\nu_0) exp \left( i (\phi(\nu_0) + (\nu - \nu_0) d\phi/\ d\nu (\nu_0)) \right) \\
+    &\simeq H_R(\nu_0) exp \left( i 2 \pi (\nu_0 \taup(\nu_0) + (\nu - \nu_0) \taug(\nu_0)) \right)
+\end{align}
+$$
 ::: 
 
 . . .
@@ -405,13 +416,29 @@ Now,
 
 **!!!Let us develop the math for this ...!!!**
 
-- This proves that the output is also a narrowband signal, of same carrier frequency $\nu_0$ as $x(n)$,
-  - with a temporal envelope which is shifted by the group delay $\taug$ w.r.t. to $x$
-  - and initial phase shifted by the phase delay $\taup$ w.r.t. $x(n)$
-
-We can see this from the delay of the envelope and the delay of the carrier modulator.
-
-- These are two independent clocks and they need to be synced to not have distortions
+1. Let s consider $y = h \ast x$ where the $X(\eipiv) = A(e^{i 2 \pi (\nu - \nu_0)})$
+2. We have
+$$
+\begin{align}
+  Y(\eipiv)
+    &= H(\eipiv) X(\eipiv)\\
+    &\simeq H_R(\nu_0) exp \left( i 2 \pi (\nu_0 \taup(\nu_0) + (\nu - \nu_0) \taug(\nu_0)) \right) \quad A(e^{i 2 \pi (\nu - \nu_0)})
+\end{align}
+$$
+3. Then, by applying a change of variable at $\nu \to \nu + \nu_0$
+$$
+  Y(e^{- i 2 \pi (\nu + \nu_0)}) = H_R(\nu_0) exp \left( - i 2 \pi (\nu_0 \taup(\nu_0) + \nu \taug(\nu_0)) \right) \quad A(e^{i 2 \pi \nu})
+$$
+  - on the LHS: the iDTFT of $Y(e^{- i 2 \pi (\nu + \nu_0)})$ is a frequency shift <-> demodulation
+  - on the RHS: is the iDTFT of a delayed signal by
+1. Reverting to the time domain, $A(e^{i 2 \pi \nu} exp (- i 2 \pi  \nu \taug(\nu_0))$ 
+$$
+y(n) e^{(- i 2 \pi \nu_0 n)} \simeq H_R(\nu_0) e^{- i 2 \pi \taup(\nu)} a(n - \taug(\nu_0))
+$$
+1. and therefore
+$$
+y(n) \simeq H_R(\nu_0) e^{- i 2 \pi \taup(\nu)} a(n - \taug(\nu_0)) e^{(i 2 \pi \nu_0 (n - \taup(\nu_0))}
+$$
 :::
 
 . . .
@@ -419,7 +446,19 @@ We can see this from the delay of the envelope and the delay of the carrier modu
 Linear phase filters (= the delay is constant)
 
 ::: {.notes}
-- As final remarks, notice that the temporal waveform of the input $x$ is not distorted by the filter, if and only if the group and phase delays are equal.
+
+- This proves that the output is also a narrowband signal, of same carrier frequency $\nu_0$ as $x(n)$,
+  - with a temporal envelope which is shifted by the group delay $\taug$ w.r.t. to $x$
+  - and initial phase shifted by the phase delay $\taup$ w.r.t. $x(n)$
+
+We can see this from the delay of the envelope and the delay of the carrier modulator.
+
+- These are two independent clocks and they need to be synced to not have distortions
+
+
+As final remarks, 
+
+- temporal waveform of the input $x$ is not distorted by the filter, if and only if the group and phase delays are equal.
 - The necessary and sufficient condition for this is that $h$ is a **linear phase filter**
 
 :::
