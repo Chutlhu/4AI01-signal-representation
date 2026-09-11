@@ -400,7 +400,7 @@ $$
 . . .
 
 
-Filtering of a *narrowband* signal $x$ ($y = h \ast x)$ (proof in the notes):
+Filtering of a *narrowband* signal $x$ ($y = h \ast x$) (proof in the notes):
 $$
   \underbrace{x(n) = a(n) e^{i 2 \pi \nu_0 n}}_{X(\eipiv)= A\left(e^{2 i \pi (\nu - \nu_0)}\right)} 
     \quad\implies\quad y(n) \simeq H_R(\nu_0) a(n - \taug(\nu_0)) \: e^{i 2 \pi \nu_0(n - \taup(\nu_0))}
@@ -430,14 +430,14 @@ $$
   Y(e^{- i 2 \pi (\nu + \nu_0)}) = H_R(\nu_0) exp \left( - i 2 \pi (\nu_0 \taup(\nu_0) + \nu \taug(\nu_0)) \right) \quad A(e^{i 2 \pi \nu})
 $$
   - on the LHS: the iDTFT of $Y(e^{- i 2 \pi (\nu + \nu_0)})$ is a frequency shift <-> demodulation
-  - on the RHS: is the iDTFT of a delayed signal by
-1. Reverting to the time domain, $A(e^{i 2 \pi \nu} exp (- i 2 \pi  \nu \taug(\nu_0))$ 
+  - on the RHS: is the iDTFT of a delayed signal by $\taug(\nu_0)$
+1. Reverting to the time domain, $A(e^{i 2 \pi \nu}) exp (- i 2 \pi  \nu \taug(\nu_0))$
 $$
-y(n) e^{(- i 2 \pi \nu_0 n)} \simeq H_R(\nu_0) e^{- i 2 \pi \taup(\nu)} a(n - \taug(\nu_0))
+y(n) e^{(- i 2 \pi \nu_0 n)} \simeq H_R(\nu_0) e^{- i 2 \pi \nu_0 \taup(\nu)} a(n - \taug(\nu_0))
 $$
 1. and therefore
 $$
-y(n) \simeq H_R(\nu_0) e^{- i 2 \pi \taup(\nu)} a(n - \taug(\nu_0)) e^{(i 2 \pi \nu_0 (n - \taup(\nu_0))}
+y(n) \simeq H_R(\nu_0) a(n - \taug(\nu_0)) e^{i 2 \pi \nu_0 (n - \taup(\nu_0))}
 $$
 :::
 

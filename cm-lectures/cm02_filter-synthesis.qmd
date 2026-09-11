@@ -33,6 +33,7 @@ So we can choose between two types of filters:
 
 Let's start with the FIR filters with linear phase
 
+
 :::
 
 
@@ -90,9 +91,9 @@ Meaning that, if the input signal has its frequency support in the passband, the
   $$
 7. The existence of $x_a$ is assured because its Fourier transform is $X_a(\nu) = X(\eipiv)$, $\nu \in [-0.5, 0.5]$ and $X_a(\nu) = 0$ elsewhere
 8. Finally, from the definition of $y(n)$, we obtain
-   $$
+  $$
     y(n) = c e^{i 2 \pi \beta} x_a(n - \alpha)
-   $$
+  $$
 
 :::
 
@@ -188,17 +189,15 @@ Keep these two lines in mind:
 
 ::: {.notes}
 
-We would like to say:
+We are looking for a filter $h$ which is
 
-- $h$ is a sequence symmetric about zero,
+- symmetric with respect to zero,
 - shifted to the right by $\alpha$ to make it causal. 
 - When $N$ is odd, $\alpha$ is an integer and this works immediately.
 
 But when $N$ is even, $\alpha$ is a half-integer. 
 
-- No integer-indexed sequence is symmetric about that point. 
-
-So we cannot manipulate the two factors separately and we need a trick.
+To implement nicely these two conditions, we need a trick.
 
 :::
 
@@ -212,19 +211,21 @@ $$
 
 ::: {.notes}
 
-Replace $\nu$ by $2\nu$. A function of period 2 becomes a function of period 1, which *is* a legitimate Fourier transform: 
+The trick is to replace $\nu$ by $2\nu$. 
+
+A function of period 2 can be considered as a function of period 1 on a double grid, and it is a legitimate Fourier transform: 
 
 - it has an inverse, a real sequence $g(n)$, 
 - which is even if $H_R$ was even, odd if $H_R$ was odd.
 
 On this doubled grid, 
 
-- the half-sample shift becomes a shift of $p$ whole samples, 
+- the half-sample shift becomes a shift of $p$ samples, 
 - and the relation reads $H(z^2) = z^{-p}G(z)$.
 
-Read it in the time domain: $H(z^2)$ is the transform of $h$ with a zero inserted between every pair of samples. So $g$, delayed by $p$ samples, is that zero-stuffed version of $h$. Turning it around: $h$ is obtained from $g$ by a shift of $p$ and a decimation by 2.
+In the time domain: $H(z^2)$ is the transform of $h$ with a zero inserted between every pair of samples. So $g$, delayed by $p$ samples, is the version of $h$ stuffed with zeros.
 
-The length of $g$ is $2N-1$, which is odd: an odd length always has a genuine center sample, so the symmetry is finally expressible.
+Now, the length of $g$ is $2N-1$, which is odd: an odd length always has a center, so the symmetry is finally expressible.
 
 :::
 
@@ -1261,7 +1262,22 @@ Remark: the IR will be long if $\rho \to 1$
 
 ## From continuous to discrete domain 
 
-![](images/fig69.svg)
+![](images/continuous_to_discrete_adc_comparison.svg)
+
+
+::: {.notes}
+
+Let conclude with one final question: can a digital filter reproduce exactly what an analog filter does? 
+
+- we have here two path:
+  - one analog, top branch, with analog filter $H(f)$, than sampled
+  - and one digital, bottom part with digital filter $H_e(f)$ who receive a sampled signal
+- then we ask, is the output zero?
+
+This is true only if the filters are truly bandlimited and there is no aliasing, but you will see this later in the course
+
+:::
+
 
 ## The end {.unlisted .center}
 
