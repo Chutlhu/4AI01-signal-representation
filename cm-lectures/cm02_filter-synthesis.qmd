@@ -121,14 +121,167 @@ Also, FIR filters have smaller sensitivity to rounding errors, due to their non-
 
 :::
 
-
 ## Characterization {.tiny-slide}
 
 $$
   H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)
 $$
 
+[Question:]{.fg} what does linear phase **force** on $h(n)$?
+
 ::: {.notes}
+
+So far, linear phase is our wish: we want that the phase is affine function of the frequencies.
+
+The question now is what price we pay for it. 
+
+We will see that, once we also impose real, causal and FIR, we no longer get to choose the shape of the impulse response: it must be symmetric or antisymmetric, and it must be centered at a very specific place.
+
+Only two binary choices survive. That is the whole content of the next slides.
+:::
+
+. . .
+
+[Two constraints on $H(\eipiv)$:]{.fg}
+
+- **1-periodicity** $\implies \alpha = p/2,\ p \in \ZZ \implies H_R$ is 2-periodic
+
+::: {.notes}
+
+We have two properties of $H$, both consequences of $h$ being a real sequence.
+
+First, 1-periodicity. 
+
+**!!!Let's verify this!!!**
+
+1. Writing $H(\eipiv) = H(e^{i2\pi(\nu+1)})$
+2. simplifying gives $H_R(\nu) = e^{-i2\pi\alpha}H_R(\nu+1)$.
+3. Since $H_R$ is real, the factor in front must be real $\implies$ $\alpha$ is a half-integer, $\alpha = p/2$ for $p \in \ZZ$. 
+4. Substituting back, $H_R(\nu+1) = (-1)^p H_R(\nu)$: 
+  - $H_R$ changes sign every period, so it is 2-periodic.
+::: 
+
+. . .
+
+- **Hermitian symmetry** $\implies d = e^{2 i \pi \beta} = 1$ or $i$ $\implies H_R$ is even or odd
+
+::: {.notes}
+Second, Hermitian symmetry:
+
+**!!!Let's verify this!!!**
+
+- $h$ real means $H(e^{-i2\pi\nu}) = \overline{H(\eipiv)}$. 
+- Substituting the polar form gives $d\,H_R(-\nu) = \bar d\, H_R(\nu)$, 
+- so the ratio $\bar d / d$ is $\pm 1$. 
+- Two solutions: $d = 1$ with $H_R$ even, or $d = i$ with $H_R$ odd.
+
+Keep these two lines in mind: 
+
+- the first one is about **where** the filter is centered,
+- the second about **which symmetry** it has.
+
+:::
+
+. . .
+
+[Obstacle:]{.fg} $\alpha$ is a **half**-integer $\implies$ "centered at $n = \alpha$" is not a sequence
+
+::: {.notes}
+
+We would like to say:
+
+- $h$ is a sequence symmetric about zero,
+- shifted to the right by $\alpha$ to make it causal. 
+- When $N$ is odd, $\alpha$ is an integer and this works immediately.
+
+But when $N$ is even, $\alpha$ is a half-integer. 
+
+- No integer-indexed sequence is symmetric about that point. 
+
+So we cannot manipulate the two factors separately and we need a trick.
+
+:::
+
+. . .
+
+[Fix:]{.fg} move to a grid twice as fine: set $G(\eipiv) = d\, H_R(2 \nu)$, now 1-periodic
+
+$$
+  H(z^2) = z^{-p} G(z), \qquad g(n) \text{ is real, even or odd, of length } 2N-1
+$$
+
+::: {.notes}
+
+Replace $\nu$ by $2\nu$. A function of period 2 becomes a function of period 1, which *is* a legitimate Fourier transform: 
+
+- it has an inverse, a real sequence $g(n)$, 
+- which is even if $H_R$ was even, odd if $H_R$ was odd.
+
+On this doubled grid, 
+
+- the half-sample shift becomes a shift of $p$ whole samples, 
+- and the relation reads $H(z^2) = z^{-p}G(z)$.
+
+Read it in the time domain: $H(z^2)$ is the transform of $h$ with a zero inserted between every pair of samples. So $g$, delayed by $p$ samples, is that zero-stuffed version of $h$. Turning it around: $h$ is obtained from $g$ by a shift of $p$ and a decimation by 2.
+
+The length of $g$ is $2N-1$, which is odd: an odd length always has a genuine center sample, so the symmetry is finally expressible.
+
+:::
+
+. . .
+
+[Choice:]{.fg} $p = N-1$, the smallest shift making $g$ causal $\implies \alpha = \frac{N-1}{2}$
+
+::: {.notes}
+
+One last decision, and it is a convention:
+
+- $g$ has length $2N-1$ and is centered at the origin, so it extends from $-(N-1)$ to $N-1$. 
+- To make it causal we must push it right by at least $N-1$ samples. 
+- Any larger $p$ also works, but it just adds leading zeros and extra delay. 
+- We take the minimal one
+
+So $\alpha = (N-1)/2$, and this delay is the price we pay at the implementation of this type of filters
+
+:::
+
+. . .
+
+[Result:]{.fg} $h(n) = \pm\, h(N-1-n)$, and exactly **4** filters
+
+  - $d=1$, $N$ even or odd: $h(n) = h(N-1-n)$
+  - $d=i$, $N$ even or odd: $h(n) = -h(N-1-n)$
+
+::: {.notes}
+
+The parity of $g$ transfers directly to $h$: 
+
+- $g$ even gives a symmetric $h$, 
+- $g$ odd an antisymmetric one
+
+Two binary choices: 
+
+- the symmetry through $d$,
+- and the parity of $N$. 
+
+So we are left with four types of possible linear FIR filters.
+
+What remains free for the engineer is $H_R$, the amplitude.
+
+- The phase is entirely determined by the structure. 
+- Filter design will therefore be an approximation problem on $H_R$ alone, which is exactly what we do in the next section.
+
+:::
+
+<!-- ## Characterization {.tiny-slide}
+
+$$
+  H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)
+$$
+
+::: {.notes}
+
+In general, we have filter that are symmetric about a center a
 
 To find the shape of the impulse response of this type of filters, we will use two properties
 
@@ -137,13 +290,13 @@ To find the shape of the impulse response of this type of filters, we will use t
 
 **!!!Let's verify this!!!**
 
-0. Knowing that $H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$
-1. 1-periodic means that $H(\eipiv) = H(e^{i 2 \pi (\nu + 1)})$, then
+1. Knowing that $H(\eipiv) = e^{i 2 \pi (\beta - \alpha \nu)} H_R(\nu)$
+2. 1-periodic means that $H(\eipiv) = H(e^{i 2 \pi (\nu + 1)})$, then
   $$
     H_R(\nu) = e^{- i 2 \pi \alpha} H_R(\nu + 1)
   $$
-2. then, since $H_R$ is real, then $\alpha$ must be an half-integer
-3. then we have $H_R(\nu + 1) = (-1)^p H_R(\nu)$, meaning the $H_R$ is 2-periodic
+1. then, since $H_R$ is real, then $\alpha$ must be an half-integer
+2. then we have $H_R(\nu + 1) = (-1)^p H_R(\nu)$, meaning the $H_R$ is 2-periodic
 
 :::
 
@@ -195,7 +348,7 @@ This leads to FIR filters that exhibit properties which make them suitable for s
 
 Note that $H_R$ is what is left to the engineer to optimize, while the phase is constrained by the FIR design.
 
-:::
+::: -->
 
 ## Types of linear FIR filters {.small-slide}
 
@@ -571,6 +724,71 @@ Hilbert transform\
 High-pass
 
 :::
+
+
+## Why linear phase? A loudspeaker crossover example {.small-slide}
+
+::: {.columns}
+
+::: {.column width="55%"}
+
+
+One signal $\to$ two drivers:
+
+- **woofer**: low-pass, $\nu < \nu_c$
+- **tweeter**: high-pass, $\nu > \nu_c$
+
+Then, the ear hears the **sum**
+
+<br>
+
+
+[Non-linear phase:]{.fg} each band delayed differently
+$\implies$ transients smeared, a drum hit arrives twice
+
+[Linear phase:]{.fg} both bands delayed by $\frac{N-1}{2}$
+$\implies$ perfect reconstruction, only a global delay
+
+:::
+
+::: {.column width="45%"}
+
+<br>
+
+![](./images/crossover.svg){fig-align="center"}
+
+:::
+
+:::
+
+
+[But:]{.fg} the tweeter needs a **high-pass** $\implies$ not type II ($H(-1)=0$)
+
+::: {.notes}
+
+Let's see here a concrete example of why we want FIR linear filters
+
+Normally a loudspeaker cannot reproduce the whole audio band with a single driver, so the signal is split:
+
+- low frequencies to the woofer,
+- high frequencies to the tweeter. 
+
+The two outputs travel through the air and recombine at your ear and the sum must reconstruct the original signal.
+
+Now, a percussive sound (a snare, a handclap) contains both low and high frequencies at the *same instant*. If the two filters have different group delays:
+- The high part and the low part arrive separated by a few milliseconds. 
+- Then, the attack loses its punch and you hear a blur sound, or even a double strike. 
+
+With linear phase, both filters delay everything by exactly the same amount, half the filter length. The parts arrive together and the transient survives intact. 
+
+- The whole signal is late, but nobody perceives a constant delay.
+
+Second point, and here is where the four types are useful:
+
+- the tweeter path is a high-pass filter, so we need type I, or type IV.
+- the woofer path is a low-pass filter, and we can use other types.
+:::
+
 
 # Part II - FIR filters: iterative methods {.section-slide}
 
