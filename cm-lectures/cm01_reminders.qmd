@@ -250,6 +250,7 @@ Beyond linearity and invariance to translation over time, we usually expect a fi
 - The stability means that a filter is stable if and only if, for any bounded input $x$, the output is also bounded (also known as BIBO)
 - and this translates to the necessary and sufficient condition that the l1-norm of the filter is finite.
 - As a consequence, the frequency response of a stable filter is always continuous
+- also, errors do not explode:
   - in fact, assume for instance that we have an input $x$ corrupted by some quantization noise $e$, due to rounding errors
   - then, by applying the filter $h$ to $x_q$, we get the output $y_q = y + h \ast e$,
   - if the filter is stable, then the residual part is bounded.
